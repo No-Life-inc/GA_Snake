@@ -1,6 +1,7 @@
 import random
 from game import SnakeGame
 from ga_brain import GABrain
+import threading
 
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate):
@@ -13,10 +14,11 @@ class GeneticAlgorithm:
         return [GABrain() for _ in range(self.population_size)]
 
     def evaluate_population(self):
-        # Evaluate the fitness of each GABrain in the population by running the game
+        # Run a game for each GABrain in the population
         for brain in self.population:
             game = SnakeGame(brain)
-            game.run()
+            while not game.game_over:
+                game.run()  # This method should update the game state based on a fixed time step
             brain.fitness = game.score
 
     def selection(self):
@@ -38,6 +40,7 @@ class GeneticAlgorithm:
                 child.genome[i] = child.random_gene()
 
     def run(self):
+        generation = 0  # Initialize generation outside the loop
         for generation in range(NUM_GENERATIONS):
             self.evaluate_population()
             new_population = []
@@ -54,11 +57,11 @@ class GeneticAlgorithm:
         print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
 
         game = SnakeGame(best_brain, display=True)
-        game.run()
+        game.game_loop()
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 100
-    POPULATION_SIZE = 100
+    NUM_GENERATIONS = 10
+    POPULATION_SIZE = 10
     MUTATION_RATE = 0.1
 
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)

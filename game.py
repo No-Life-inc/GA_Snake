@@ -4,9 +4,10 @@ import sys
 import random
 from snake import Snake
 from ga_brain import GABrain
+import threading
 
 class SnakeGame:
-    def __init__(self, brain=None, width=800, height=600, snake_size=20, display=True):
+    def __init__(self, brain=None, width=800, height=600, snake_size=20, display=False):
         pygame.init()
         self.clock = pygame.time.Clock()
         self.WIDTH, self.HEIGHT = width, height
@@ -23,11 +24,13 @@ class SnakeGame:
         self.display = display
         if self.display:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        self.game_over = False
 
-    def game_over(self):
+    def end_game(self):
         print("Game Over!")
-        pygame.quit()
-        sys.exit()
+        self.game_over = True
+        if self.display:
+            pygame.quit()
 
     def get_direction_from_input(self, keys):
         if keys[pygame.K_UP]:
@@ -123,17 +126,17 @@ class SnakeGame:
 
         return look
 
-    def run(self):
-        while True:
+    def game_loop(self):
+        while self.game_over is False:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.game_over()
+                    self.end_game()
 
             # Get the current state of the game
             state = self.get_state()
 
             # Debug: Print state to ensure it is being calculated correctly
-            print("State:", state)
+            # print("State:", state)
 
             # Convert state to a one-dimensional array
             state = np.array(state, dtype=float)
@@ -142,7 +145,7 @@ class SnakeGame:
             direction = self.brain.forward(state)
 
             # Debug: Print direction to ensure AI is making a decision
-            print("Direction:", direction)
+            # print("Direction:", direction)
 
             # Map the direction to a velocity
             direction = self.map_direction_to_velocity(direction)
@@ -158,11 +161,11 @@ class SnakeGame:
 
             head_pos = self.snake.get_head_pos()
             if head_pos[0] < 0 or head_pos[0] > self.WIDTH - 20 or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - 20:
-                print("Wall Collision")
-                self.game_over()
+                # print("Wall Collision")
+                self.end_game()
             if self.snake.collides_with_self():
-                print("Self Collision")
-                self.game_over()
+                # print("Self Collision")
+                self.end_game()
 
             if self.display:
                 self.screen.fill(pygame.Color(0, 0, 0))
@@ -176,6 +179,13 @@ class SnakeGame:
                 pygame.display.flip()
 
             self.clock.tick(60)
+
+    def wait_until_over(self):
+        # Wait for the game to finish
+        self.game_thread.join()
+
+    def run(self):
+        self.game_loop()
 
     def generate_food(self):
         self.food_pos = [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
