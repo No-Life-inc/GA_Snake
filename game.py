@@ -1,3 +1,4 @@
+import numpy as np
 import pygame
 import sys
 import random
@@ -11,18 +12,20 @@ class SnakeGame:
         self.WIDTH, self.HEIGHT = width, height
         self.SNAKE_SIZE = snake_size
         self.SNAKE_SPEED = self.SNAKE_SIZE  # make sure the snake's speed is the same as the grid cell size
-        self.snake = Snake([100//self.SNAKE_SIZE*self.SNAKE_SIZE, 50//self.SNAKE_SIZE*self.SNAKE_SIZE], [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
+        self.snake = Snake([100 // self.SNAKE_SIZE * self.SNAKE_SIZE, 50 // self.SNAKE_SIZE * self.SNAKE_SIZE],
+                           [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
         self.generate_food()
         if brain is not None:
             self.brain = brain
         else:
-            self.brain = GABrain(24, 16, 4, 2)
+            self.brain = GABrain(input_nodes=25, hidden_nodes=16, output_nodes=4, hidden_layers=2)
         self.score = 0
         self.display = display
         if self.display:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
 
     def game_over(self):
+        print("Game Over!")
         pygame.quit()
         sys.exit()
 
@@ -37,25 +40,23 @@ class SnakeGame:
             return [self.SNAKE_SPEED, 0]
         else:
             return self.snake.direction.get()
-        
+
     def get_state(self):
-        # Get the position of the snake's head
-        head_pos = self.snake.get_head_pos()
-
-        # Get the position of the food
-        food_pos = self.food_pos
-
-        # Get the direction of the snake
+        # Get the direction of the snake (a single value)
         direction = self.snake.direction.get()
 
         # Get the vision of the snake
         vision = self.look()
 
         # Flatten the vision list
-        vision = [item for sublist in vision for item in sublist]
+        vision_flat = [item for sublist in vision for item in sublist]
 
-        # return head_pos + food_pos + [direction] + vision
-        return [direction] + vision
+        # Ensure direction is a single value
+        if isinstance(direction, list):
+            direction = direction[0]
+
+        # Return direction as a single value followed by vision
+        return [direction] + vision_flat
 
     def map_direction_to_velocity(self, direction):
         if direction == 0:
@@ -66,9 +67,9 @@ class SnakeGame:
             return [-self.SNAKE_SPEED, 0]
         elif direction == 3:
             return [self.SNAKE_SPEED, 0]
-        
+
     def look(self):
-    # Define the 8 directions
+        # Define the 8 directions
         directions = [
             (-self.SNAKE_SIZE, 0),  # Left
             (-self.SNAKE_SIZE, -self.SNAKE_SIZE),  # Up-left
@@ -82,14 +83,8 @@ class SnakeGame:
 
         # Look in each direction
         vision = []
-
-        # For each direction...
         for direction in directions:
-            # Get the vision in this direction
-            vision_in_this_direction = self.look_in_direction(direction)
-
-            # Add the vision in this direction to the vision list
-            vision.append(vision_in_this_direction)
+            vision.append(self.look_in_direction(direction))
 
         return vision
 
@@ -124,7 +119,7 @@ class SnakeGame:
                 look[1] = 1
 
         # Set the distance to the wall
-        look[2] = 1 / distance
+        look[2] = 1 / distance if distance != 0 else 1
 
         return look
 
@@ -133,12 +128,21 @@ class SnakeGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.game_over()
-            
+
             # Get the current state of the game
             state = self.get_state()
 
+            # Debug: Print state to ensure it is being calculated correctly
+            print("State:", state)
+
+            # Convert state to a one-dimensional array
+            state = np.array(state, dtype=float)
+
             # Get the direction from the AI
             direction = self.brain.forward(state)
+
+            # Debug: Print direction to ensure AI is making a decision
+            print("Direction:", direction)
 
             # Map the direction to a velocity
             direction = self.map_direction_to_velocity(direction)
@@ -147,37 +151,39 @@ class SnakeGame:
 
             if self.snake.get_head_pos() == self.food_pos:
                 self.score += 1
-                self.food_pos = [random.randrange(1, self.WIDTH//self.SNAKE_SIZE) * self.SNAKE_SIZE, random.randrange(1, self.HEIGHT//self.SNAKE_SIZE) * self.SNAKE_SIZE]
+                print("Food Eaten! Score:", self.score)
+                self.generate_food()
             else:
                 self.snake.shrink()
 
             head_pos = self.snake.get_head_pos()
-            if head_pos[0] < 0 or head_pos[0] > self.WIDTH-20 or head_pos[1] < 0 or head_pos[1] > self.HEIGHT-20:
+            if head_pos[0] < 0 or head_pos[0] > self.WIDTH - 20 or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - 20:
+                print("Wall Collision")
                 self.game_over()
             if self.snake.collides_with_self():
+                print("Self Collision")
                 self.game_over()
-            if self.snake.get_head_pos() == self.food_pos:
-                self.score += 1
-                self.generate_food()
 
             if self.display:
                 self.screen.fill(pygame.Color(0, 0, 0))
 
                 for body_part in self.snake.get_body():
-                    pygame.draw.rect(self.screen, pygame.Color(0,255,0), pygame.Rect(*body_part))
+                    pygame.draw.rect(self.screen, pygame.Color(0, 255, 0), pygame.Rect(*body_part))
 
-                pygame.draw.rect(self.screen, pygame.Color(255,0,0), pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
+                pygame.draw.rect(self.screen, pygame.Color(255, 0, 0),
+                                 pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
 
                 pygame.display.flip()
 
             self.clock.tick(60)
 
     def generate_food(self):
-        self.food_pos = [random.randrange(self.WIDTH//self.SNAKE_SIZE) * self.SNAKE_SIZE, random.randrange(self.HEIGHT//self.SNAKE_SIZE) * self.SNAKE_SIZE]
+        self.food_pos = [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
+                         random.randrange(self.HEIGHT // self.SNAKE_SIZE) * self.SNAKE_SIZE]
 
     def wall_collide(self, pos):
         """Check if a given position collides with the wall."""
-        return pos[0] < 0 or pos[0] > self.WIDTH-20 or pos[1] < 0 or pos[1] > self.HEIGHT-20
+        return pos[0] < 0 or pos[0] > self.WIDTH - 20 or pos[1] < 0 or pos[1] > self.HEIGHT - 20
 
     def food_collide(self, pos):
         """Check if a given position collides with the food."""
@@ -186,4 +192,3 @@ class SnakeGame:
     def body_collide(self, pos):
         """Check if a given position collides with the snake's body."""
         return pos in self.snake.get_body()
-
