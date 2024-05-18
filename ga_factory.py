@@ -1,3 +1,7 @@
+import random
+from game import SnakeGame
+from ga_brain import GABrain
+
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate):
         self.population_size = population_size
@@ -5,33 +9,57 @@ class GeneticAlgorithm:
         self.population = self.initialize_population()
 
     def initialize_population(self):
-        # Create an initial population of random genomes
-        pass
+        # Create an initial population of random GABrain instances
+        return [GABrain() for _ in range(self.population_size)]
 
     def evaluate_population(self):
-        # Evaluate the fitness of each genome in the population
-        pass
+        # Evaluate the fitness of each GABrain in the population by running the game
+        for brain in self.population:
+            game = SnakeGame(brain)
+            game.run()
+            brain.fitness = game.score
 
     def selection(self):
-        # Select genomes to reproduce based on their fitness
-        pass
+        # Select a GABrain to reproduce based on its fitness
+        total_fitness = sum(brain.fitness for brain in self.population)
+        selection_probabilities = [brain.fitness / total_fitness for brain in self.population]
+        return random.choices(self.population, weights=selection_probabilities, k=1)[0]
 
     def crossover(self, parent1, parent2):
-        # Create a new genome by combining the genes of two parent genomes
-        pass
+        # Create a new GABrain by combining the genomes of two parent GABrains
+        child = GABrain()
+        child.genome = [random.choice(gene_pair) for gene_pair in zip(parent1.genome, parent2.genome)]
+        return child
 
-    def mutation(self, genome):
-        # Randomly change some genes in the genome
-        pass
+    def mutation(self, child):
+        # Randomly change some genes in the child's genome
+        for i in range(len(child.genome)):
+            if random.random() < self.mutation_rate:
+                child.genome[i] = child.random_gene()
 
     def run(self):
         for generation in range(NUM_GENERATIONS):
             self.evaluate_population()
             new_population = []
-            for i in range(self.population_size):
+
+            for _ in range(self.population_size):
                 parent1 = self.selection()
                 parent2 = self.selection()
                 child = self.crossover(parent1, parent2)
                 self.mutation(child)
                 new_population.append(child)
             self.population = new_population
+
+        best_brain = max(self.population, key=lambda brain: brain.fitness)
+        print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
+
+        game = SnakeGame(best_brain, display=True)
+        game.run()
+
+if __name__ == "__main__":
+    NUM_GENERATIONS = 100
+    POPULATION_SIZE = 100
+    MUTATION_RATE = 0.1
+
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)
+    ga.run()

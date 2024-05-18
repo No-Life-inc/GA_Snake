@@ -1,9 +1,12 @@
+
+
 class Snake:
     def __init__(self, initial_pos, speed, size):
         self.pos = [list(initial_pos)]
         self.speed = speed
         self.size = size
         self.direction = Direction()
+        
 
     def move(self, direction):
         self.direction.set(direction)
