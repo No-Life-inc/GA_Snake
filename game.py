@@ -25,6 +25,8 @@ class SnakeGame:
         if self.display:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.game_over = False
+        self.recent_positions = []
+
 
     def end_game(self):
         print("Game Over!")
@@ -127,58 +129,56 @@ class SnakeGame:
         return look
 
     def game_loop(self):
-        while self.game_over is False:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+        try:
+            while not self.game_over:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.end_game()
+                        return
+
+                state = self.get_state()
+                state = np.array(state, dtype=float)
+                direction = self.brain.forward(state)
+                velocity = self.map_direction_to_velocity(direction)
+
+                self.snake.move(velocity)
+                self.recent_positions.append(self.snake.get_head_pos())
+                if len(self.recent_positions) > 100:  # Track the last 100 positions
+                    self.recent_positions.pop(0)
+
+                if self.snake.get_head_pos() == self.food_pos:
+                    self.score += 1
+                    print("Food Eaten! Score:", self.score)
+                    self.generate_food()
+                else:
+                    self.snake.shrink()
+
+                head_pos = self.snake.get_head_pos()
+                if head_pos[0] < 0 or head_pos[0] >= self.WIDTH or head_pos[1] < 0 or head_pos[1] >= self.HEIGHT:
+                    self.end_game()
+                if self.snake.collides_with_self() or self.detect_loop():
                     self.end_game()
 
-            # Get the current state of the game
-            state = self.get_state()
+                if self.display:
+                    self.screen.fill(pygame.Color(0, 0, 0))
+                    for body_part in self.snake.get_body():
+                        pygame.draw.rect(self.screen, pygame.Color(0, 255, 0), pygame.Rect(*body_part, self.SNAKE_SIZE, self.SNAKE_SIZE))
+                    pygame.draw.rect(self.screen, pygame.Color(255, 0, 0),
+                                     pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
+                    pygame.display.flip()
 
-            # Debug: Print state to ensure it is being calculated correctly
-            # print("State:", state)
+                self.clock.tick(10000)  # Adjust game speed
+        except KeyboardInterrupt:
+            print("Game interrupted by user.")
+            self.end_game()
 
-            # Convert state to a one-dimensional array
-            state = np.array(state, dtype=float)
+    def detect_loop(self):
+        # Check for repetitive positions indicating a loop
+        if len(self.recent_positions) < 100:
+            return False
+        pos_set = set(tuple(pos) for pos in self.recent_positions)
+        return len(pos_set) < len(self.recent_positions) // 2  # Arbitrary threshold for loop detection
 
-            # Get the direction from the AI
-            direction = self.brain.forward(state)
-
-            # Debug: Print direction to ensure AI is making a decision
-            # print("Direction:", direction)
-
-            # Map the direction to a velocity
-            direction = self.map_direction_to_velocity(direction)
-
-            self.snake.move(direction)
-
-            if self.snake.get_head_pos() == self.food_pos:
-                self.score += 1
-                print("Food Eaten! Score:", self.score)
-                self.generate_food()
-            else:
-                self.snake.shrink()
-
-            head_pos = self.snake.get_head_pos()
-            if head_pos[0] < 0 or head_pos[0] > self.WIDTH - 20 or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - 20:
-                # print("Wall Collision")
-                self.end_game()
-            if self.snake.collides_with_self():
-                # print("Self Collision")
-                self.end_game()
-
-            if self.display:
-                self.screen.fill(pygame.Color(0, 0, 0))
-
-                for body_part in self.snake.get_body():
-                    pygame.draw.rect(self.screen, pygame.Color(0, 255, 0), pygame.Rect(*body_part))
-
-                pygame.draw.rect(self.screen, pygame.Color(255, 0, 0),
-                                 pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
-
-                pygame.display.flip()
-
-            self.clock.tick(60)
 
     def wait_until_over(self):
         # Wait for the game to finish

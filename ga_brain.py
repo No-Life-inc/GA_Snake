@@ -18,6 +18,7 @@ class GABrain:
             self.genome = genome
 
         self.weights = self._decode_genome(self.genome)
+        self.visited_positions = set()
 
     def _create_genome(self):
         genome = []
@@ -51,3 +52,10 @@ class GABrain:
         for i in range(len(self.weights)):
             if np.random.rand() < mutation_rate:
                 self.weights[i] += np.random.randn(*self.weights[i].shape) * 0.1
+
+    def calculate_fitness(self, game):
+        # Calculate fitness based on game score and penalize for loops
+        self.fitness = game.score
+        loop_penalty = len(self.visited_positions) / 100  # Adjust penalty factor as needed
+        self.fitness -= loop_penalty
+        return self.fitness
