@@ -9,17 +9,22 @@ class Snake:
         self.steps = initial_steps
         self.food_bonus = initial_steps
         self.age = 0
+        self.grow_next_move = False
         
 
     def move(self, direction):
         self.direction.set(direction)
         new_head = [self.pos[0][0] + self.direction.get()[0], self.pos[0][1] + self.direction.get()[1]]
         self.pos.insert(0, new_head)
+        if not self.grow_next_move:  # Add this line
+            self.pos.pop()  # Add this line
+        else:
+            self.grow_next_move = False  # Reset the flag after growing
         self.steps -= 1
         self.age += 1
 
     def grow(self):
-        self.pos.append(self.pos[-1])
+        self.grow_next_move = True
         self.steps = self.food_bonus
 
     def shrink(self):

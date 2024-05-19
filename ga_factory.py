@@ -19,7 +19,7 @@ class GeneticAlgorithm:
         for brain in self.population:
             game = SnakeGame(brain=brain, display=False)
             snake_age, score = game.run()
-            brain.fitness = brain.set_fitness(snake_age, score)
+            brain.set_fitness(snake_age, score)
 
     def selection(self):
         # Sort the population in descending order of fitness
@@ -50,6 +50,19 @@ class GeneticAlgorithm:
         for i in range(len(child.genome)):
             if random.random() < self.mutation_rate:
                 child.genome[i] = child.random_gene()
+    
+    def generate_new_population(self):
+        # Keep the top 20% of the population
+        new_population = self.population[:int(0.2 * len(self.population))]
+
+        # Generate new brains from the top 20% until we reach the original population size
+        while len(new_population) < self.population_size:
+            parent1 = self.selection()
+            parent2 = self.selection()
+            child = self.crossover(parent1, parent2)
+            new_population.append(child)
+
+        self.population = new_population
 
     def run(self):
         game = SnakeGame(display=False)
@@ -66,15 +79,15 @@ class GeneticAlgorithm:
             game.display = True  # Display the game
             game.run()
 
-            new_population = []
+            ga.generate_new_population()
 
-            for _ in range(self.population_size):
-                parent1 = self.selection()
-                parent2 = self.selection()
-                child = self.crossover(parent1, parent2)
-                self.mutation(child)
-                new_population.append(child)
-            self.population = new_population
+            # for _ in range(self.population_size):
+            #     parent1 = self.selection()
+            #     parent2 = self.selection()
+            #     child = self.crossover(parent1, parent2)
+            #     self.mutation(child)
+            #     new_population.append(child)
+            # self.population = new_population
 
 
         game.brain = best_brain
@@ -82,9 +95,9 @@ class GeneticAlgorithm:
         game.run()
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 30
+    NUM_GENERATIONS = 100
     POPULATION_SIZE = 2000
-    MUTATION_RATE = 0.2
+    MUTATION_RATE = 0.5
 
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)
     ga.run()

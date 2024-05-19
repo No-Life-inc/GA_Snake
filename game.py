@@ -58,12 +58,12 @@ class SnakeGame:
 
         state = []
 
-            # Add boundary padding
-        padding = self.SNAKE_SIZE  # Change this to the desired padding distance
-        state.append(int(self.snake.get_head_pos()[0] < padding))  # Left
-        state.append(int(self.snake.get_head_pos()[0] > self.WIDTH - padding))  # Right
-        state.append(int(self.snake.get_head_pos()[1] < padding))  # Top
-        state.append(int(self.snake.get_head_pos()[1] > self.HEIGHT - padding))  # Bottom
+        #     # Add boundary padding
+        # padding = self.SNAKE_SIZE  # Change this to the desired padding distance
+        # state.append(int(self.snake.get_head_pos()[0] < padding))  # Left
+        # state.append(int(self.snake.get_head_pos()[0] > self.WIDTH - padding))  # Right
+        # state.append(int(self.snake.get_head_pos()[1] < padding))  # Top
+        # state.append(int(self.snake.get_head_pos()[1] > self.HEIGHT - padding))  # Bottom
 
 
         # Get the direction of the snake (a single value)
@@ -120,7 +120,8 @@ class SnakeGame:
         pos = list(self.snake.get_head_pos())
 
         # Initialize the distance
-        distance = 0
+        distance = 1
+        food_distance = -1
 
         # Initialize the food found and body found flags
         food_found = False
@@ -142,10 +143,42 @@ class SnakeGame:
                 body_found = True
                 look[1] = 1
 
-        # Set the distance to the wall
-        print("Distance to wall:", distance)
-        look[2] = distance
+        look[2] = 1/distance
+        
 
+        return look
+    
+    # an attempt to make the look function more efficient
+    def new_look_in_direction(self, direction):
+        # Initialize the look array
+        look = [0, 0, 0]
+
+        # Get the position of the snake's head
+        pos = list(self.snake.get_head_pos())
+
+        # Initialize the distance
+        distance = 1
+
+        # Move in the direction until hitting a wall
+        while not self.wall_collide(pos):
+            pos[0] += direction[0]
+            pos[1] += direction[1]
+            distance += 1
+
+            # Check for food
+            if self.food_collide(pos):
+                look[0] = 1
+                look[2] = distance  # Store the distance to the food
+                return look
+
+            # Check for body
+            if self.body_collide(pos):
+                look[1] = 1
+                look[2] = distance  # Store the distance to the body
+                return look
+
+        # If no food or body was found, store the distance to the wall
+        look[2] = distance
         return look
 
     def game_loop(self):
@@ -183,7 +216,7 @@ class SnakeGame:
             self.snake.move(direction)
 
             if self.snake.get_head_pos() == self.food_pos:
-                self.score += 100
+                self.score += 1000
                 self.snake.grow()
                 # print("Food Eaten! Score:", self.score)
                 self.food_pos = self.generate_food()
