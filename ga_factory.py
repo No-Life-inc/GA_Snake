@@ -24,7 +24,11 @@ class GeneticAlgorithm:
     def selection(self):
         # Select a GABrain to reproduce based on its fitness
         total_fitness = sum(brain.fitness for brain in self.population)
-        selection_probabilities = [brain.fitness / total_fitness for brain in self.population]
+        if total_fitness ==0:
+            # If total fitness is zero, assign equal selection probabilities
+            selection_probabilities = [1 / self.population_size for _ in self.population]
+        else:
+            selection_probabilities = [brain.fitness / total_fitness for brain in self.population]
         return random.choices(self.population, weights=selection_probabilities, k=1)[0]
 
     def crossover(self, parent1, parent2):
