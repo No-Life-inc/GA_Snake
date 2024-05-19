@@ -15,7 +15,7 @@ class SnakeGame:
         self.SNAKE_SPEED = self.SNAKE_SIZE  # make sure the snake's speed is the same as the grid cell size
         self.snake = Snake([100 // self.SNAKE_SIZE * self.SNAKE_SIZE, 50 // self.SNAKE_SIZE * self.SNAKE_SIZE],
                            [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
-        self.generate_food()
+        self.food_pos = self.generate_food()
         if brain is not None:
             self.brain = brain
         else:
@@ -25,12 +25,21 @@ class SnakeGame:
         if self.display:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.game_over = False
+        
+
+    def reset(self):
+        self.snake = Snake([100 // self.SNAKE_SIZE * self.SNAKE_SIZE, 50 // self.SNAKE_SIZE * self.SNAKE_SIZE],
+                           [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
+        self.food_pos = self.generate_food()
+        self.score = 0
+        self.game_over = False
+        self.display = False
 
     def end_game(self):
-        print("Game Over!")
+        # print("Game Over!")
         self.game_over = True
-        if self.display:
-            pygame.quit()
+        # if self.display:
+            # pygame.quit()
 
     def get_direction_from_input(self, keys):
         if keys[pygame.K_UP]:
@@ -127,7 +136,11 @@ class SnakeGame:
         return look
 
     def game_loop(self):
-        while self.game_over is False:
+        while not self.game_over:
+
+            if self.snake.steps == 0:
+                self.end_game()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.end_game()
@@ -153,9 +166,10 @@ class SnakeGame:
             self.snake.move(direction)
 
             if self.snake.get_head_pos() == self.food_pos:
-                self.score += 1
-                print("Food Eaten! Score:", self.score)
-                self.generate_food()
+                self.score += 100
+                self.snake.grow()
+                # print("Food Eaten! Score:", self.score)
+                self.food_pos = self.generate_food()
             else:
                 self.snake.shrink()
 
@@ -168,6 +182,9 @@ class SnakeGame:
                 self.end_game()
 
             if self.display:
+                if not hasattr(self, 'screen'):
+                    self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+                    
                 self.screen.fill(pygame.Color(0, 0, 0))
 
                 for body_part in self.snake.get_body():
@@ -177,18 +194,27 @@ class SnakeGame:
                                  pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
 
                 pygame.display.flip()
+                
+                self.clock.tick(30)
 
-            self.clock.tick(60)
+        # score and snake age
+        achieved_snake_age  = self.snake.age
+        achieved_score = self.score
+        self.reset()
+
+        return achieved_snake_age, achieved_score
+                
 
     def wait_until_over(self):
         # Wait for the game to finish
         self.game_thread.join()
 
     def run(self):
-        self.game_loop()
+        snake_age, score =  self.game_loop()
+        return snake_age, score
 
     def generate_food(self):
-        self.food_pos = [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
+        return  [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
                          random.randrange(self.HEIGHT // self.SNAKE_SIZE) * self.SNAKE_SIZE]
 
     def wall_collide(self, pos):
