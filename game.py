@@ -13,8 +13,7 @@ class SnakeGame:
         self.WIDTH, self.HEIGHT = width, height
         self.SNAKE_SIZE = snake_size
         self.SNAKE_SPEED = self.SNAKE_SIZE  # make sure the snake's speed is the same as the grid cell size
-        self.snake = Snake([100 // self.SNAKE_SIZE * self.SNAKE_SIZE, 50 // self.SNAKE_SIZE * self.SNAKE_SIZE],
-                           [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
+        self.snake = Snake(self.random_position(), [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
         self.food_pos = self.generate_food()
         if brain is not None:
             self.brain = brain
@@ -26,10 +25,12 @@ class SnakeGame:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.game_over = False
         
+    def random_position(self):
+        return [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
+                random.randrange(self.HEIGHT // self.SNAKE_SIZE) * self.SNAKE_SIZE]
 
     def reset(self):
-        self.snake = Snake([100 // self.SNAKE_SIZE * self.SNAKE_SIZE, 50 // self.SNAKE_SIZE * self.SNAKE_SIZE],
-                           [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
+        self.snake = Snake(self.random_position(), [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
         self.food_pos = self.generate_food()
         self.score = 0
         self.game_over = False
@@ -54,6 +55,17 @@ class SnakeGame:
             return self.snake.direction.get()
 
     def get_state(self):
+
+        state = []
+
+            # Add boundary padding
+        padding = self.SNAKE_SIZE  # Change this to the desired padding distance
+        state.append(int(self.snake.get_head_pos()[0] < padding))  # Left
+        state.append(int(self.snake.get_head_pos()[0] > self.WIDTH - padding))  # Right
+        state.append(int(self.snake.get_head_pos()[1] < padding))  # Top
+        state.append(int(self.snake.get_head_pos()[1] > self.HEIGHT - padding))  # Bottom
+
+
         # Get the direction of the snake (a single value)
         direction = self.snake.direction.get()
 
@@ -68,7 +80,7 @@ class SnakeGame:
             direction = direction[0]
 
         # Return direction as a single value followed by vision
-        return [direction] + vision_flat
+        return state + [direction] + vision_flat
 
     def map_direction_to_velocity(self, direction):
         if direction == 0:
@@ -131,7 +143,8 @@ class SnakeGame:
                 look[1] = 1
 
         # Set the distance to the wall
-        look[2] = 1 / distance if distance != 0 else 1
+        print("Distance to wall:", distance)
+        look[2] = distance
 
         return look
 
@@ -163,6 +176,10 @@ class SnakeGame:
             # Map the direction to a velocity
             direction = self.map_direction_to_velocity(direction)
 
+            # Check if the snake is in line with the food
+            # if self.display == True and self.snake.get_head_pos()[0] == self.food_pos[0] or self.snake.get_head_pos()[1] == self.food_pos[1]:
+            #     print(f"Snake is in line with the food. Direction: {direction}")
+
             self.snake.move(direction)
 
             if self.snake.get_head_pos() == self.food_pos:
@@ -170,11 +187,12 @@ class SnakeGame:
                 self.snake.grow()
                 # print("Food Eaten! Score:", self.score)
                 self.food_pos = self.generate_food()
+                # print("New Food Position:", self.food_pos)
             else:
                 self.snake.shrink()
 
             head_pos = self.snake.get_head_pos()
-            if head_pos[0] < 0 or head_pos[0] > self.WIDTH - 20 or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - 20:
+            if head_pos[0] < 0 or head_pos[0] > self.WIDTH - self.SNAKE_SIZE or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - self.SNAKE_SIZE:
                 # print("Wall Collision")
                 self.end_game()
             if self.snake.collides_with_self():
@@ -219,7 +237,7 @@ class SnakeGame:
 
     def wall_collide(self, pos):
         """Check if a given position collides with the wall."""
-        return pos[0] < 0 or pos[0] > self.WIDTH - 20 or pos[1] < 0 or pos[1] > self.HEIGHT - 20
+        return pos[0] < 0 or pos[0] > self.WIDTH - self.SNAKE_SIZE or pos[1] < 0 or pos[1] > self.HEIGHT - self.SNAKE_SIZE
 
     def food_collide(self, pos):
         """Check if a given position collides with the food."""

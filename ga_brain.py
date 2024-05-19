@@ -4,7 +4,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 class GABrain:
-    def __init__(self, genome=None, input_nodes=25, hidden_nodes=32, output_nodes=4, hidden_layers=2):
+    def __init__(self, genome=None, input_nodes=29, hidden_nodes=58, output_nodes=4, hidden_layers=3):
         self.input_nodes = input_nodes
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
