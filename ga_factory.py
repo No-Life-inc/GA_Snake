@@ -3,12 +3,14 @@ from game import SnakeGame
 from ga_brain import GABrain
 import threading
 import pygame
+from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate):
+    def __init__(self, population_size, mutation_rate, selection_method=top_20_percent):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
+        self.selection_method = selection_method
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
@@ -28,18 +30,21 @@ class GeneticAlgorithm:
 
         print(f"Highest amount of food eaten: {highest_amount_of_food_eaten}")
 
+    # def selection(self):
+    #     # Sort the population in descending order of fitness
+    #     sorted_population = sorted(self.population, key=lambda brain: brain.fitness, reverse=True)
+
+    #     # Select the top 20%
+    #     top_20_percent = sorted_population[:int(0.2 * len(sorted_population))]
+
+    #     # Randomly select one from the top 20%
+    #     selected_brain = random.choice(top_20_percent)
+
+    #     return selected_brain
+
     def selection(self):
-        # Sort the population in descending order of fitness
-        sorted_population = sorted(self.population, key=lambda brain: brain.fitness, reverse=True)
-
-        # Select the top 20%
-        top_20_percent = sorted_population[:int(0.4 * len(sorted_population))]
-
-        # Randomly select one from the top 20%
-        selected_brain = random.choice(top_20_percent)
-
-        return selected_brain
-
+        return self.selection_method(self.population)
+    
     def crossover(self, parent1, parent2):
         # Create a new GABrain by combining the genomes of two parent GABrains
         child = GABrain()
@@ -60,7 +65,7 @@ class GeneticAlgorithm:
     
     def generate_new_population(self):
         # Keep the top 20% of the population
-        new_population = self.population[:int(0.4 * len(self.population))]
+        new_population = self.population[:int(0.2 * len(self.population))]
 
         # Generate new brains from the top 20% until we reach the original population size
         while len(new_population) < self.population_size:
@@ -98,7 +103,7 @@ if __name__ == "__main__":
     POPULATION_SIZE = 500
     MUTATION_RATE = 0.01
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=top_20_percent)
     ga.run()
 
-    pygame.quit()  # Add this line
+    pygame.quit()
