@@ -1,10 +1,8 @@
 import numpy as np
 import pygame
-import sys
 import random
 from snake import Snake
 from ga_brain import GABrain
-import threading
 import pickle
 
 class SnakeGame:

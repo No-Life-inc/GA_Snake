@@ -3,13 +3,15 @@ from game import SnakeGame
 from ga_brain import GABrain
 import pygame
 import matplotlib.pyplot as plt
+from selection_methods import top_20_percent
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate):
+    def __init__(self, population_size, mutation_rate, selection_method=top_20_percent):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
         self.gen_score_dict = {}
+        self.selection_method = selection_method
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
@@ -73,11 +75,13 @@ class GeneticAlgorithm:
             if random.random() < self.mutation_rate:
                 child.genome[i] = child.random_gene()
     
+    def selection(self):
+        return self.selection_method(self.population)
+    
     def generate_new_population(self):
-        # Keep the top 20% of the population
-        new_population = self.population[:int(0.2 * len(self.population))]
+        # Generate new brains until we reach the original population size
+        new_population = []
 
-        # Generate new brains from the top 20% until we reach the original population size
         while len(new_population) < self.population_size:
             parent1 = self.selection()
             parent2 = self.selection()
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     POPULATION_SIZE = 2000
     MUTATION_RATE = 0.2
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=top_20_percent)
     ga.run()
     ga.make_plot()
 
