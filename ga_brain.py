@@ -16,12 +16,17 @@ class GABrain:
         else:
             self.genome = genome
 
+
         self.weights = self._decode_genome(self.genome)
 
     def set_fitness(self, snake_age, game_score):
-        self.fitness = snake_age * (game_score+1)
+        self.fitness = snake_age + game_score
 
         return self.fitness
+
+    def reset_fitness(self):
+        self.fitness = 0
+
 
     def _create_genome(self):
         genome = []
