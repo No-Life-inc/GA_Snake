@@ -5,6 +5,7 @@ import random
 from snake import Snake
 from ga_brain import GABrain
 import threading
+import pickle
 
 class SnakeGame:
     def __init__(self, brain=None, width=800, height=600, snake_size=20, display=False):
@@ -24,6 +25,7 @@ class SnakeGame:
         if self.display:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.game_over = False
+        self.record = []
         
     def random_position(self):
         mid_width = self.WIDTH // 2
@@ -194,24 +196,14 @@ class SnakeGame:
             # Get the current state of the game
             state = self.get_state()
 
-            # Debug: Print state to ensure it is being calculated correctly
-            # print("State:", state)
-
             # Convert state to a one-dimensional array
             state = np.array(state, dtype=float)
 
             # Get the direction from the AI
             direction = self.brain.forward(state)
 
-            # Debug: Print direction to ensure AI is making a decision
-            # print("Direction:", direction)
-
             # Map the direction to a velocity
             direction = self.map_direction_to_velocity(direction)
-
-            # Check if the snake is in line with the food
-            # if self.display == True and self.snake.get_head_pos()[0] == self.food_pos[0] or self.snake.get_head_pos()[1] == self.food_pos[1]:
-            #     print(f"Snake is in line with the food. Direction: {direction}")
 
             self.snake.move(direction)
 
@@ -245,14 +237,46 @@ class SnakeGame:
                 pygame.display.flip()
                 
                 self.clock.tick(30)
+            
+            self.record.append((list(self.snake.get_body()), list(self.food_pos)))
 
         # score and snake age
         achieved_snake_age  = self.snake.age
         achieved_food_eaten = self.snake.food_eaten
         achieved_score = self.score
+        
         self.reset()
 
         return achieved_snake_age, achieved_score, achieved_food_eaten
+    
+    def play_back(self, filename):
+        # Load the recorded game states from the file
+        self.load_game_states(filename)
+
+        self.display = True
+
+        # Loop through the recorded game states
+        for state in self.record:
+            # Update the snake's body and food position
+            self.snake.set_body(state[0])
+            self.food_pos = state[1]
+
+            # Update the game display
+            if self.display:
+                if not hasattr(self, 'screen'):
+                    self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+                    
+                self.screen.fill(pygame.Color(0, 0, 0))
+
+                for body_part in self.snake.get_body():
+                    pygame.draw.rect(self.screen, pygame.Color(0, 255, 0), pygame.Rect(*body_part))
+
+                pygame.draw.rect(self.screen, pygame.Color(255, 0, 0),
+                                pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
+
+                pygame.display.flip()
+                
+                self.clock.tick(30)
                 
 
     def wait_until_over(self):
@@ -278,3 +302,11 @@ class SnakeGame:
     def body_collide(self, pos):
         """Check if a given position collides with the snake's body."""
         return pos in self.snake.get_body()
+    
+    def save_game_states(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(self.record, f)
+
+    def load_game_states(self, filename):
+        with open(filename, 'rb') as f:
+            self.record = pickle.load(f)

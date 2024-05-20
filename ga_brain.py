@@ -1,5 +1,5 @@
 import numpy as np
-from activation_functions import tanh, softmax
+from activation_functions import tanh, softmax, relu
 
 
 class GABrain:
@@ -39,7 +39,7 @@ class GABrain:
         curr_layer = np.append(inputs, 1)  # Append 1 for bias
 
         for i in range(self.hidden_layers):
-            curr_layer = tanh(np.dot(self.weights[i], curr_layer))
+            curr_layer = relu(np.dot(self.weights[i], curr_layer))
             curr_layer = np.append(curr_layer, 1)  # Append 1 for bias
 
         output = np.dot(self.weights[-1], curr_layer)
