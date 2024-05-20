@@ -36,6 +36,9 @@ class Snake:
     def get_body(self):
         return [(pos[0], pos[1], self.size, self.size) for pos in self.pos]
     
+    def set_body(self, body):
+        self.pos = body
+    
     def get_head_pos(self):
         return self.pos[0] if self.pos else [0, 0]
 

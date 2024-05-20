@@ -16,9 +16,10 @@ class GeneticAlgorithm:
         # Create an initial population of random GABrain instances
         return [GABrain() for _ in range(self.population_size)]
 
-    def evaluate_population(self):
+    def evaluate_population(self, generation_number: int):
         # Run a game for each GABrain in the population
         highest_amount_of_food_eaten = 0
+        best_game: SnakeGame = None
 
         for brain in self.population:
             game = SnakeGame(brain=brain, display=False)
@@ -27,8 +28,17 @@ class GeneticAlgorithm:
 
             if food_eaten > highest_amount_of_food_eaten:
                 highest_amount_of_food_eaten = food_eaten
+                best_game = game
 
         print(f"Highest amount of food eaten: {highest_amount_of_food_eaten}")
+
+        # Save the best game's replay to a file
+        if best_game is not None:
+            best_game.save_game_states(f'best_snakes/Gen_{generation_number}_snake.pkl')
+        
+        # Replay the best game
+        if best_game is not None:
+            best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')
 
     # def selection(self):
     #     # Sort the population in descending order of fitness
