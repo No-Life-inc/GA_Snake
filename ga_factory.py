@@ -4,10 +4,10 @@ from ga_brain import GABrain
 import pygame
 import matplotlib.pyplot as plt
 from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection
-from crossover_methods import single_point_crossover, uniform_crossover, arithmetic_crossover
+from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate, selection_method=top_20_percent, crossover_method=arithmetic_crossover):
+    def __init__(self, population_size, mutation_rate, selection_method=tournament_selection, crossover_method=two_point_crossover):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
@@ -47,29 +47,6 @@ class GeneticAlgorithm:
         #save to dictionary
         self.gen_score_dict[generation_number] = highest_amount_of_food_eaten
 
-    # def selection(self):
-    #     # Sort the population in descending order of fitness
-    #     sorted_population = sorted(self.population, key=lambda brain: brain.fitness, reverse=True)
-
-    #     # Select the top 20%
-    #     top_20_percent = sorted_population[:int(0.2 * len(sorted_population))]
-
-    #     # Randomly select one from the top 20%
-    #     selected_brain = random.choice(top_20_percent)
-
-    #     return selected_brain
-
-    # def crossover(self, parent1, parent2):
-    #     # Create a new GABrain by combining the genomes of two parent GABrains
-    #     child = GABrain()
-
-    #     # Determine the crossover point (where to split the parent genomes)
-    #     crossover_point = random.randint(0, len(parent1.genome))
-
-    #     # Take the first part of the genome from parent1 and the rest from parent2
-    #     child.genome = parent1.genome[:crossover_point] + parent2.genome[crossover_point:]
-
-    #     return child
 
     def mutation(self, child):
         # Randomly change some genes in the child's genome
@@ -125,7 +102,7 @@ if __name__ == "__main__":
     POPULATION_SIZE = 2000
     MUTATION_RATE = 0.2
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=top_20_percent, crossover_method=arithmetic_crossover)
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=tournament_selection, crossover_method=two_point_crossover)
     ga.run()
     ga.make_plot()
 

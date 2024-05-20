@@ -1,5 +1,4 @@
 import random
-
 from ga_brain import GABrain
 
 def single_point_crossover(parent1, parent2):
@@ -11,6 +10,19 @@ def single_point_crossover(parent1, parent2):
 
     # Take the first part of the genome from parent1 and the rest from parent2
     child.genome = parent1.genome[:crossover_point] + parent2.genome[crossover_point:]
+
+    return child
+
+def two_point_crossover(parent1, parent2):
+    # Create a new GABrain
+    child = GABrain()
+
+    # Determine the crossover points (where to split the parent genomes)
+    crossover_point1 = random.randint(0, len(parent1.genome) - 1)
+    crossover_point2 = random.randint(crossover_point1, len(parent1.genome))
+
+    # Take the first part of the genome from parent1, the middle part from parent2, and the last part from parent1
+    child.genome = parent1.genome[:crossover_point1] + parent2.genome[crossover_point1:crossover_point2] + parent1.genome[crossover_point2:]
 
     return child
 
