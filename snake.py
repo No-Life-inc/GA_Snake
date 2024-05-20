@@ -29,10 +29,6 @@ class Snake:
         self.food_eaten += 1
         self.steps = self.food_bonus
 
-    def shrink(self):
-        if len(self.pos) > 1:
-            self.pos.pop()
-
     def collides_with_self(self):
         for block in self.pos[1:]:
             if self.pos[0] == block:

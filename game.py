@@ -221,8 +221,6 @@ class SnakeGame:
                 # print("Food Eaten! Score:", self.score)
                 self.food_pos = self.generate_food()
                 # print("New Food Position:", self.food_pos)
-            else:
-                self.snake.shrink()
 
             head_pos = self.snake.get_head_pos()
             if head_pos[0] < 0 or head_pos[0] > self.WIDTH - self.SNAKE_SIZE or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - self.SNAKE_SIZE:

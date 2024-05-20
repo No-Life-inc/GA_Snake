@@ -23,14 +23,10 @@ class GeneticAlgorithm:
             snake_age, score, food_eaten = game.run()
             brain.set_fitness(snake_age, score)
 
-           
-
             if food_eaten > highest_amount_of_food_eaten:
                 highest_amount_of_food_eaten = food_eaten
 
         print(f"Highest amount of food eaten: {highest_amount_of_food_eaten}")
-
-
 
     def selection(self):
         # Sort the population in descending order of fitness
