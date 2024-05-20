@@ -1,14 +1,15 @@
 import random
 from game import SnakeGame
 from ga_brain import GABrain
-import threading
 import pygame
+import matplotlib.pyplot as plt
 
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
+        self.gen_score_dict = {}
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
@@ -18,6 +19,7 @@ class GeneticAlgorithm:
         # Run a game for each GABrain in the population
         highest_amount_of_food_eaten = 0
         best_game: SnakeGame = None
+        generation_number = generation_number + 1
 
         for brain in self.population:
             game = SnakeGame(brain=brain, display=False)
@@ -37,6 +39,9 @@ class GeneticAlgorithm:
         # Replay the best game
         if best_game is not None:
             best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')
+
+        #save to dictionary
+        self.gen_score_dict[generation_number] = highest_amount_of_food_eaten
 
     def selection(self):
         # Sort the population in descending order of fitness
@@ -92,23 +97,27 @@ class GeneticAlgorithm:
             best_brain = max(self.population, key=lambda brain: brain.fitness)
             # print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
 
-            # Run a game with the best brain of this generation
-            # game.brain = best_brain  # Update the brain of the Game instance
-            # game.display = True  # Display the game
-            # game.run()
-
             ga.generate_new_population()
-
-        game.brain = best_brain
-        game.display = True
-        game.run()
+    
+    def make_plot(self):
+        keys = list(self.gen_score_dict.keys())
+        values = [int(value) for value in self.gen_score_dict.values()]
+        plt.scatter(keys, values)
+        plt.plot(keys, values)
+        plt.xlabel('Generation')
+        plt.ylabel('Score')
+        plt.title('Generation vs Score')
+        plt.yticks(range(0, max(values)+1, 1))  # Set y-ticks
+        plt.xticks(range(1, max(keys)+1, 1))  # Set x-ticks starting from 1
+        plt.show()
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 1000
+    NUM_GENERATIONS = 30
     POPULATION_SIZE = 2000
     MUTATION_RATE = 0.2
 
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)
     ga.run()
+    ga.make_plot()
 
     pygame.quit()  # Add this line

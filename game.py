@@ -40,10 +40,7 @@ class SnakeGame:
         self.display = False
 
     def end_game(self):
-        # print("Game Over!")
         self.game_over = True
-        # if self.display:
-            # pygame.quit()
 
     def get_direction_from_input(self, keys):
         if keys[pygame.K_UP]:
@@ -78,8 +75,6 @@ class SnakeGame:
         # Ensure direction is a single value
         if isinstance(direction, list):
             direction = direction[0]
-
-        # euc_dist = self.euclidean_distance_to_food()
 
         # Return direction as a single value followed by vision
         return state + vision_flat
