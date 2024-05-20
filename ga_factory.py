@@ -112,7 +112,7 @@ class GeneticAlgorithm:
         plt.show()
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 30
+    NUM_GENERATIONS = 2
     POPULATION_SIZE = 2000
     MUTATION_RATE = 0.2
 
