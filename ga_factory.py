@@ -4,15 +4,21 @@ from game import SnakeGame
 from ga_brain import GABrain
 import pygame
 import matplotlib.pyplot as plt
-from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection
+from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, \
+    elitism_selection, alpha_selection
+from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
+
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate, selection_method=tournament_selection):
+    def __init__(self, population_size, mutation_rate, selection_method=tournament_selection,
+                 crossover_methods=single_point_crossover, elitism_rate=0):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
         self.gen_score_dict = {}
         self.selection_method = selection_method
+        self.elitism_rate = elitism_rate
+        self.crossover_method = crossover_methods
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
@@ -42,11 +48,7 @@ class GeneticAlgorithm:
         self.gen_score_dict[generation_number] = highest_amount_of_food_eaten
 
     def crossover(self, parent1, parent2):
-        # Create a new GABrain by combining the genomes of two parent GABrains
-        crossover_point = random.randint(0, len(parent1.genome))
-        child_genome = parent1.genome[:crossover_point] + parent2.genome[crossover_point:]
-        child = GABrain(genome=child_genome)
-        return child
+        return self.crossover_method(parent1, parent2)
 
     def mutation(self, child):
         # Randomly change some genes in the child's genome
@@ -61,23 +63,21 @@ class GeneticAlgorithm:
     def generate_new_population(self):
         self.population.sort(key=lambda brain: brain.fitness, reverse=True)
 
-        # Determine the number of individuals to keep
-        num_elites = int(self.population_size * ELITISM_RATE)
+        elites = elitism_selection(self.population, self.elitism_rate)
+        new_population = elites[:]
 
-        # Keep the best individuals
-        new_population = self.population[:num_elites]
-
-        # Print the top 20 best of the population on one line in an array
-        print([brain.fitness for brain in new_population[:20]])
-
-        # Alpha crossover strategy
-        alpha = self.population[0]  # Best individual
-        mothers = self.population[1:num_elites]  # Remaining top individuals
-
-        # Generate new brains until we reach the original population size
         while len(new_population) < self.population_size:
-            mother = random.choice(mothers)
-            child = self.crossover(alpha, mother)
+            selected = self.selection()
+
+            if isinstance(selected, (list, tuple)) and len(selected) == 2:
+                parent1, parent2 = selected
+            else:
+                parent1 = selected
+                parent2 = selected
+                while parent2 == parent1:
+                    parent2 = self.selection()
+
+            child = self.crossover(parent1, parent2)
             self.mutation(child)
             new_population.append(child)
 
@@ -89,7 +89,6 @@ class GeneticAlgorithm:
         for generation in range(NUM_GENERATIONS):
             self.evaluate_population(generation)
             best_brain = max(self.population, key=lambda brain: brain.fitness)
-            print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
             self.generate_new_population()
 
     def make_plot(self):
@@ -100,9 +99,10 @@ class GeneticAlgorithm:
         plt.xlabel('Generation')
         plt.ylabel('Score')
         plt.title('Generation vs Score')
-        plt.yticks(range(0, max(values)+1, 1))
-        plt.xticks(range(1, max(keys)+1, 1))
+        plt.yticks(range(0, max(values) + 1, 1))
+        plt.xticks(range(1, max(keys) + 1, 1))
         plt.show()
+
 
 if __name__ == "__main__":
     NUM_GENERATIONS = 50
@@ -110,7 +110,8 @@ if __name__ == "__main__":
     MUTATION_RATE = 0.05
     ELITISM_RATE = 0.1
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=tournament_selection)
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=alpha_selection,
+                          crossover_methods=uniform_crossover, elitism_rate=ELITISM_RATE)
     ga.run()
     ga.make_plot()
 
