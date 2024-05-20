@@ -18,7 +18,7 @@ class SnakeGame:
         if brain is not None:
             self.brain = brain
         else:
-            self.brain = GABrain(input_nodes=25, hidden_nodes=16, output_nodes=4, hidden_layers=2)
+            self.brain = GABrain()
         self.score = 0
         self.display = display
         if self.display:
@@ -26,8 +26,9 @@ class SnakeGame:
         self.game_over = False
         
     def random_position(self):
-        return [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
-                random.randrange(self.HEIGHT // self.SNAKE_SIZE) * self.SNAKE_SIZE]
+        mid_width = self.WIDTH // 2
+        mid_height = self.HEIGHT // 2
+        return [mid_width - (mid_width % self.SNAKE_SIZE), mid_height - (mid_height % self.SNAKE_SIZE)]
 
     def reset(self):
         self.snake = Snake(self.random_position(), [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
@@ -53,18 +54,15 @@ class SnakeGame:
             return [self.SNAKE_SPEED, 0]
         else:
             return self.snake.direction.get()
+        
+    def euclidean_distance_to_food(self):
+        head_pos = np.array(self.snake.get_head_pos())
+        food_pos = np.array(self.food_pos)
+        return np.linalg.norm(head_pos - food_pos)
 
     def get_state(self):
 
         state = []
-
-        #     # Add boundary padding
-        # padding = self.SNAKE_SIZE  # Change this to the desired padding distance
-        # state.append(int(self.snake.get_head_pos()[0] < padding))  # Left
-        # state.append(int(self.snake.get_head_pos()[0] > self.WIDTH - padding))  # Right
-        # state.append(int(self.snake.get_head_pos()[1] < padding))  # Top
-        # state.append(int(self.snake.get_head_pos()[1] > self.HEIGHT - padding))  # Bottom
-
 
         # Get the direction of the snake (a single value)
         direction = self.snake.direction.get()
@@ -79,8 +77,10 @@ class SnakeGame:
         if isinstance(direction, list):
             direction = direction[0]
 
+        # euc_dist = self.euclidean_distance_to_food()
+
         # Return direction as a single value followed by vision
-        return state + [direction] + vision_flat
+        return state + vision_flat
 
     def map_direction_to_velocity(self, direction):
         if direction == 0:
@@ -221,8 +221,6 @@ class SnakeGame:
                 # print("Food Eaten! Score:", self.score)
                 self.food_pos = self.generate_food()
                 # print("New Food Position:", self.food_pos)
-            else:
-                self.snake.shrink()
 
             head_pos = self.snake.get_head_pos()
             if head_pos[0] < 0 or head_pos[0] > self.WIDTH - self.SNAKE_SIZE or head_pos[1] < 0 or head_pos[1] > self.HEIGHT - self.SNAKE_SIZE:
@@ -250,10 +248,11 @@ class SnakeGame:
 
         # score and snake age
         achieved_snake_age  = self.snake.age
+        achieved_food_eaten = self.snake.food_eaten
         achieved_score = self.score
         self.reset()
 
-        return achieved_snake_age, achieved_score
+        return achieved_snake_age, achieved_score, achieved_food_eaten
                 
 
     def wait_until_over(self):
@@ -261,8 +260,8 @@ class SnakeGame:
         self.game_thread.join()
 
     def run(self):
-        snake_age, score =  self.game_loop()
-        return snake_age, score
+        snake_age, score, food_eaten =  self.game_loop()
+        return snake_age, score, food_eaten
 
     def generate_food(self):
         return  [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,

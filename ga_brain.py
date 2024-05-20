@@ -1,20 +1,8 @@
 import numpy as np
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-def relu(x):
-    return np.maximum(0, x)
-
-def tanh(x):
-    return np.tanh(x)
-
-def softmax(x):
-    exps = np.exp(x - np.max(x))
-    return exps / np.sum(exps)
+from activation_functions import tanh, softmax, sigmoid
 
 class GABrain:
-    def __init__(self, genome=None, input_nodes=25, hidden_nodes=25, output_nodes=4, hidden_layers=2):
+    def __init__(self, genome=None, input_nodes=24, hidden_nodes=16, output_nodes=4, hidden_layers=2):
         self.input_nodes = input_nodes
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
@@ -30,16 +18,16 @@ class GABrain:
         self.weights = self._decode_genome(self.genome)
 
     def set_fitness(self, snake_age, game_score):
-        self.fitness = snake_age * game_score
+        self.fitness = snake_age * (game_score+1)
 
         return self.fitness
 
     def _create_genome(self):
         genome = []
-        genome.append(np.random.randn(self.hidden_nodes, self.input_nodes + 1))  # +1 for bias
+        genome.append(np.random.randn(self.hidden_nodes, self.input_nodes + 1))  # Added +1 for bias
         for _ in range(self.hidden_layers - 1):
-            genome.append(np.random.randn(self.hidden_nodes, self.hidden_nodes + 1))  # +1 for bias
-        genome.append(np.random.randn(self.output_nodes, self.hidden_nodes + 1))  # +1 for bias
+            genome.append(np.random.randn(self.hidden_nodes, self.hidden_nodes + 1))  # Added +1 for bias
+        genome.append(np.random.randn(self.output_nodes, self.hidden_nodes + 1))  # Added +1 for bias
         return genome
 
     def _decode_genome(self, genome):

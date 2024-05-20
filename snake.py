@@ -7,6 +7,7 @@ class Snake:
         self.steps = initial_steps
         self.food_bonus = initial_steps
         self.age = 0
+        self.food_eaten = 0
         self.grow_next_move = False
         
 
@@ -23,11 +24,8 @@ class Snake:
 
     def grow(self):
         self.grow_next_move = True
+        self.food_eaten += 1
         self.steps = self.food_bonus
-
-    def shrink(self):
-        if len(self.pos) > 1:
-            self.pos.pop()
 
     def collides_with_self(self):
         for block in self.pos[1:]:
