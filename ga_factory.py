@@ -3,15 +3,17 @@ from game import SnakeGame
 from ga_brain import GABrain
 import pygame
 import matplotlib.pyplot as plt
-from selection_methods import top_20_percent
+from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection
+from crossover_methods import single_point_crossover, uniform_crossover, arithmetic_crossover
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate, selection_method=top_20_percent):
+    def __init__(self, population_size, mutation_rate, selection_method=top_20_percent, crossover_method=arithmetic_crossover):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
         self.gen_score_dict = {}
         self.selection_method = selection_method
+        self.crossover_method = crossover_method
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
@@ -45,35 +47,38 @@ class GeneticAlgorithm:
         #save to dictionary
         self.gen_score_dict[generation_number] = highest_amount_of_food_eaten
 
-    def selection(self):
-        # Sort the population in descending order of fitness
-        sorted_population = sorted(self.population, key=lambda brain: brain.fitness, reverse=True)
+    # def selection(self):
+    #     # Sort the population in descending order of fitness
+    #     sorted_population = sorted(self.population, key=lambda brain: brain.fitness, reverse=True)
 
-        # Select the top 20%
-        top_20_percent = sorted_population[:int(0.2 * len(sorted_population))]
+    #     # Select the top 20%
+    #     top_20_percent = sorted_population[:int(0.2 * len(sorted_population))]
 
-        # Randomly select one from the top 20%
-        selected_brain = random.choice(top_20_percent)
+    #     # Randomly select one from the top 20%
+    #     selected_brain = random.choice(top_20_percent)
 
-        return selected_brain
+    #     return selected_brain
 
-    def crossover(self, parent1, parent2):
-        # Create a new GABrain by combining the genomes of two parent GABrains
-        child = GABrain()
+    # def crossover(self, parent1, parent2):
+    #     # Create a new GABrain by combining the genomes of two parent GABrains
+    #     child = GABrain()
 
-        # Determine the crossover point (where to split the parent genomes)
-        crossover_point = random.randint(0, len(parent1.genome))
+    #     # Determine the crossover point (where to split the parent genomes)
+    #     crossover_point = random.randint(0, len(parent1.genome))
 
-        # Take the first part of the genome from parent1 and the rest from parent2
-        child.genome = parent1.genome[:crossover_point] + parent2.genome[crossover_point:]
+    #     # Take the first part of the genome from parent1 and the rest from parent2
+    #     child.genome = parent1.genome[:crossover_point] + parent2.genome[crossover_point:]
 
-        return child
+    #     return child
 
     def mutation(self, child):
         # Randomly change some genes in the child's genome
         for i in range(len(child.genome)):
             if random.random() < self.mutation_rate:
                 child.genome[i] = child.random_gene()
+
+    def crossover(self, parent1, parent2):
+        return self.crossover_method(parent1, parent2)
     
     def selection(self):
         return self.selection_method(self.population)
@@ -116,11 +121,11 @@ class GeneticAlgorithm:
         plt.show()
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 2
+    NUM_GENERATIONS = 30
     POPULATION_SIZE = 2000
     MUTATION_RATE = 0.2
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=top_20_percent)
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=top_20_percent, crossover_method=arithmetic_crossover)
     ga.run()
     ga.make_plot()
 
