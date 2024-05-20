@@ -12,14 +12,14 @@ from crossover_methods import single_point_crossover, two_point_crossover, unifo
 
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate, selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, elitism_rate=0):
+                 crossover_methods=single_point_crossover, elitism_rate=0, display_best_snake=False):
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
         self.gen_score_dict = {}
         self.selection_method = selection_method
-
+        self.display_best_snake = display_best_snake
         self.elitism_rate = elitism_rate
         self.crossover_method = crossover_methods
 
@@ -47,7 +47,9 @@ class GeneticAlgorithm:
 
         if best_game is not None:
             best_game.save_game_states(f'best_snakes/Gen_{generation_number}_snake.pkl')
-            best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')
+
+            if self.display_best_snake:
+                best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')
 
         self.gen_score_dict[generation_number] = highest_amount_of_food_eaten
 
@@ -96,6 +98,10 @@ class GeneticAlgorithm:
             best_brain = max(self.population, key=lambda brain: brain.fitness)
             self.generate_new_population()
 
+        plt = self.make_plot()
+        self.save_plot(plt)
+
+
     def make_plot(self):
         keys = list(self.gen_score_dict.keys())
         values = [int(value) for value in self.gen_score_dict.values()]
@@ -106,18 +112,30 @@ class GeneticAlgorithm:
         plt.title('Generation vs Score')
         plt.yticks(range(0, max(values) + 1, 1))
         plt.xticks(range(1, max(keys) + 1, 1))
-        plt.show()
+
+        return plt
+    
+    def save_plot(self, plt):
+        # Get the names of the selection and crossover methods
+        selection_method_name = self.selection_method.__name__
+        crossover_method_name = self.crossover_method.__name__
+
+        # Create the filename
+        filename = f'graphs/ga_plot_{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}.png'
+
+        # Save the plot
+        plt.savefig(filename)
 
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 50
+    NUM_GENERATIONS = 2
     POPULATION_SIZE = 2000
     MUTATION_RATE = 0.05
     ELITISM_RATE = 0.1
 
 
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=alpha_selection,
-                          crossover_methods=uniform_crossover, elitism_rate=ELITISM_RATE)
+                          crossover_methods=uniform_crossover, elitism_rate=ELITISM_RATE, display_best_snake=True)
 
     ga.run()
     ga.make_plot()

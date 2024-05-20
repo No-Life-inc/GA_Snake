@@ -244,33 +244,33 @@ class SnakeGame:
     
     def play_back(self, filename):
         # Load the recorded game states from the file
-        if(False):
-            self.load_game_states(filename)
 
-            self.display = True
+        self.load_game_states(filename)
 
-            # Loop through the recorded game states
-            for state in self.record:
-                # Update the snake's body and food position
-                self.snake.set_body(state[0])
-                self.food_pos = state[1]
+        self.display = True
 
-                # Update the game display
-                if self.display:
-                    if not hasattr(self, 'screen'):
-                        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        # Loop through the recorded game states
+        for state in self.record:
+            # Update the snake's body and food position
+            self.snake.set_body(state[0])
+            self.food_pos = state[1]
 
-                    self.screen.fill(pygame.Color(0, 0, 0))
+            # Update the game display
+            if self.display:
+                if not hasattr(self, 'screen'):
+                    self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
 
-                    for body_part in self.snake.get_body():
-                        pygame.draw.rect(self.screen, pygame.Color(0, 255, 0), pygame.Rect(*body_part))
+                self.screen.fill(pygame.Color(0, 0, 0))
 
-                    pygame.draw.rect(self.screen, pygame.Color(255, 0, 0),
-                                    pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
+                for body_part in self.snake.get_body():
+                    pygame.draw.rect(self.screen, pygame.Color(0, 255, 0), pygame.Rect(*body_part))
 
-                    pygame.display.flip()
+                pygame.draw.rect(self.screen, pygame.Color(255, 0, 0),
+                                pygame.Rect(self.food_pos[0], self.food_pos[1], self.SNAKE_SIZE, self.SNAKE_SIZE))
 
-                    self.clock.tick(30)
+                pygame.display.flip()
+
+                self.clock.tick(30)
                 
 
     def wait_until_over(self):
