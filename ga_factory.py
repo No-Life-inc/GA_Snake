@@ -3,10 +3,11 @@ from game import SnakeGame
 from ga_brain import GABrain
 import threading
 import pygame
+import os
 from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate, selection_method=top_20_percent):
+    def __init__(self, population_size, mutation_rate, selection_method=tournament_selection):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
@@ -29,16 +30,18 @@ class GeneticAlgorithm:
             if food_eaten > highest_amount_of_food_eaten:
                 highest_amount_of_food_eaten = food_eaten
                 best_game = game
-
+        
         print(f"Highest amount of food eaten: {highest_amount_of_food_eaten}")
 
         # Save the best game's replay to a file
         if best_game is not None:
-            best_game.save_game_states(f'best_snakes/Gen_{generation_number}_snake.pkl')
-        
+            directory = 'best_snakes/'
+            os.makedirs(directory, exist_ok=True)  # Create directory if it doesn't exist
+            best_game.save_game_states(f'{directory}Gen_{generation_number}_snake.pkl')
+
         # Replay the best game
         if best_game is not None:
-            best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')
+            best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')    
 
     # def selection(self):
     #     # Sort the population in descending order of fitness
@@ -74,10 +77,9 @@ class GeneticAlgorithm:
                 child.genome[i] = child.random_gene()
     
     def generate_new_population(self):
-        # Keep the top 20% of the population
-        new_population = self.population[:int(0.2 * len(self.population))]
+        # Generate new brains until we reach the original population size
+        new_population = []
 
-        # Generate new brains from the top 20% until we reach the original population size
         while len(new_population) < self.population_size:
             parent1 = self.selection()
             parent2 = self.selection()
@@ -92,7 +94,7 @@ class GeneticAlgorithm:
 
         generation = 0  # Initialize generation outside the loop
         for generation in range(NUM_GENERATIONS):
-            self.evaluate_population()
+            self.evaluate_population(generation)
 
             best_brain = max(self.population, key=lambda brain: brain.fitness)
             # print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
@@ -113,7 +115,7 @@ if __name__ == "__main__":
     POPULATION_SIZE = 500
     MUTATION_RATE = 0.01
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=top_20_percent)
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=tournament_selection)
     ga.run()
 
     pygame.quit()

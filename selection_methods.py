@@ -25,6 +25,6 @@ def rank_selection(population):
             return brain
 
 def tournament_selection(population):
-    tournament_size = min(len(population), 5)
+    tournament_size = min(len(population), 3)
     tournament = random.sample(population, tournament_size)
     return max(tournament, key=lambda brain: brain.fitness)
