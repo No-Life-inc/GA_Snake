@@ -16,10 +16,21 @@ class GeneticAlgorithm:
 
     def evaluate_population(self):
         # Run a game for each GABrain in the population
+        highest_amount_of_food_eaten = 0
+
         for brain in self.population:
             game = SnakeGame(brain=brain, display=False)
-            snake_age, score = game.run()
+            snake_age, score, food_eaten = game.run()
             brain.set_fitness(snake_age, score)
+
+           
+
+            if food_eaten > highest_amount_of_food_eaten:
+                highest_amount_of_food_eaten = food_eaten
+
+        print(f"Highest amount of food eaten: {highest_amount_of_food_eaten}")
+
+
 
     def selection(self):
         # Sort the population in descending order of fitness
@@ -60,6 +71,7 @@ class GeneticAlgorithm:
             parent1 = self.selection()
             parent2 = self.selection()
             child = self.crossover(parent1, parent2)
+            self.mutation(child)
             new_population.append(child)
 
         self.population = new_population
@@ -72,7 +84,7 @@ class GeneticAlgorithm:
             self.evaluate_population()
 
             best_brain = max(self.population, key=lambda brain: brain.fitness)
-            print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
+            # print(f"Generation {generation}: Best fitness = {best_brain.fitness}")
 
             # Run a game with the best brain of this generation
             game.brain = best_brain  # Update the brain of the Game instance
@@ -81,23 +93,14 @@ class GeneticAlgorithm:
 
             ga.generate_new_population()
 
-            # for _ in range(self.population_size):
-            #     parent1 = self.selection()
-            #     parent2 = self.selection()
-            #     child = self.crossover(parent1, parent2)
-            #     self.mutation(child)
-            #     new_population.append(child)
-            # self.population = new_population
-
-
         game.brain = best_brain
         game.display = True
         game.run()
 
 if __name__ == "__main__":
-    NUM_GENERATIONS = 100
+    NUM_GENERATIONS = 1000
     POPULATION_SIZE = 2000
-    MUTATION_RATE = 0.5
+    MUTATION_RATE = 0.2
 
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE)
     ga.run()

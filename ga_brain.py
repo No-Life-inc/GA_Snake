@@ -1,20 +1,9 @@
 import numpy as np
+from activation_functions import tanh, softmax
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-def relu(x):
-    return np.maximum(0, x)
-
-def tanh(x):
-    return np.tanh(x)
-
-def softmax(x):
-    exps = np.exp(x - np.max(x))
-    return exps / np.sum(exps)
 
 class GABrain:
-    def __init__(self, genome=None, input_nodes=25, hidden_nodes=25, output_nodes=4, hidden_layers=2):
+    def __init__(self, genome=None, input_nodes=24, hidden_nodes=16, output_nodes=4, hidden_layers=2):
         self.input_nodes = input_nodes
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
@@ -30,16 +19,16 @@ class GABrain:
         self.weights = self._decode_genome(self.genome)
 
     def set_fitness(self, snake_age, game_score):
-        self.fitness = snake_age * game_score
+        self.fitness = snake_age * (game_score+1)
 
         return self.fitness
 
     def _create_genome(self):
         genome = []
-        genome.append(np.random.randn(self.hidden_nodes, self.input_nodes + 1))  # +1 for bias
+        genome.append(np.random.randn(self.hidden_nodes, self.input_nodes + 1))  # Added +1 for bias
         for _ in range(self.hidden_layers - 1):
-            genome.append(np.random.randn(self.hidden_nodes, self.hidden_nodes + 1))  # +1 for bias
-        genome.append(np.random.randn(self.output_nodes, self.hidden_nodes + 1))  # +1 for bias
+            genome.append(np.random.randn(self.hidden_nodes, self.hidden_nodes + 1))  # Added +1 for bias
+        genome.append(np.random.randn(self.output_nodes, self.hidden_nodes + 1))  # Added +1 for bias
         return genome
 
     def _decode_genome(self, genome):
@@ -47,14 +36,14 @@ class GABrain:
 
     def forward(self, inputs):
         inputs = np.ravel(np.array(inputs))  # Convert inputs to a flat numpy array
-        inputs = np.append(inputs, 1)  # Add bias to the inputs
-        curr_layer = inputs
+        curr_layer = np.append(inputs, 1)  # Append 1 for bias
 
         for i in range(self.hidden_layers):
             curr_layer = tanh(np.dot(self.weights[i], curr_layer))
-            curr_layer = np.append(curr_layer, 1)  # Add bias to the output of the hidden layer
+            curr_layer = np.append(curr_layer, 1)  # Append 1 for bias
 
-        output = sigmoid(np.dot(self.weights[-1], curr_layer))
+        output = np.dot(self.weights[-1], curr_layer)
+
         direction_probabilities = softmax(output)
 
         # Get the index of the direction with the highest probability
