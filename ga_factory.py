@@ -4,6 +4,7 @@ from game import SnakeGame
 from ga_brain import GABrain
 import pygame
 import matplotlib.pyplot as plt
+
 from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, \
     elitism_selection, alpha_selection
 from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
@@ -12,13 +13,16 @@ from crossover_methods import single_point_crossover, two_point_crossover, unifo
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate, selection_method=tournament_selection,
                  crossover_methods=single_point_crossover, elitism_rate=0):
+
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
         self.gen_score_dict = {}
         self.selection_method = selection_method
+
         self.elitism_rate = elitism_rate
         self.crossover_method = crossover_methods
+
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
@@ -56,6 +60,7 @@ class GeneticAlgorithm:
             mutation_mask = np.random.rand(*layer.shape) < self.mutation_rate
             random_genes = np.random.randn(*layer.shape)  # Assuming normal distribution for random genes
             child.genome[i] = np.where(mutation_mask, random_genes, layer)
+
 
     def selection(self):
         return self.selection_method(self.population)
@@ -110,8 +115,10 @@ if __name__ == "__main__":
     MUTATION_RATE = 0.05
     ELITISM_RATE = 0.1
 
+
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=alpha_selection,
                           crossover_methods=uniform_crossover, elitism_rate=ELITISM_RATE)
+
     ga.run()
     ga.make_plot()
 
