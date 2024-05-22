@@ -116,16 +116,18 @@ class GeneticAlgorithm:
     def make_plot(self):
         keys = list(self.gen_best_score_dict.keys())
         values = [int(value) for value in self.gen_best_score_dict.values()]
-        new_plt = plt.figure()
-        new_plt.scatter(keys, values)
-        new_plt.plot(keys, values)
-        new_plt.xlabel('Generation')
-        new_plt.ylabel('Score')
-        new_plt.title('Generation vs Score')
-        new_plt.yticks(range(0, max(values) + 1, 1))
-        new_plt.xticks(range(1, max(keys) + 1, 1))
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)  # Create an Axes object
 
-        return new_plt
+        ax.scatter(keys, values)
+        ax.plot(keys, values)
+        ax.set_xlabel('Generation')
+        ax.set_ylabel('Score')
+        ax.set_title('Generation vs Score')
+        ax.set_yticks(range(0, max(values) + 1, 1))
+        ax.set_xticks(range(1, max(keys) + 1, 1))
+
+        return fig
     
     def save_plot(self, plt):
 

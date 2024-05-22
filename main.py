@@ -1,8 +1,8 @@
+#%%
 from ga_factory import GeneticAlgorithm
 from selection_methods import alpha_selection, tournament_selection, elitism_selection, rank_selection, roulette_wheel_selection, top_20_percent
 from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
 import pygame
-
 
 
 if __name__ == "__main__":
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     mutation_rates = [0.1]
     selection_methods = [alpha_selection, rank_selection, top_20_percent]
     crossover_methods = [single_point_crossover, two_point_crossover, arithmetic_crossover]
-    generations = 30
+    generations = 100
     elistism_rates = [0.1]
 
     for population_size in population_sizes:
@@ -26,3 +26,6 @@ if __name__ == "__main__":
 
 
 pygame.quit()
+
+
+#%%
