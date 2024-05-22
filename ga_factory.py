@@ -6,26 +6,27 @@ import pygame
 import matplotlib.pyplot as plt
 import os
 
-from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, \
-    elitism_selection, alpha_selection
+from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, elitism_selection, alpha_selection
 from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
 
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate, selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, elitism_rate=0, display_best_snake=False):
+    def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
+                 crossover_methods=single_point_crossover, elitism_rate=None, display_best_snake=False):
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
+        self.number_of_generations = number_of_generations
         self.population = self.initialize_population()
         self.gen_best_score_dict = {}
         self.gen_avg_fitness_dict = {}
         self.gen_best_fitness_dict = {}
         self.selection_method = selection_method
         self.display_best_snake = display_best_snake
-        self.elitism_rate = elitism_rate
         self.crossover_method = crossover_methods
         self.path = self.make_subdirs()
+        if elitism_rate:
+            self.elitism_rate = elitism_rate
 
 
     def initialize_population(self):
@@ -101,7 +102,7 @@ class GeneticAlgorithm:
             brain.reset_fitness()
 
     def run(self):
-        for generation in range(NUM_GENERATIONS):
+        for generation in range(self.number_of_generations):
             self.evaluate_population(generation)
             best_brain = max(self.population, key=lambda brain: brain.fitness)
             self.generate_new_population()
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     ELITISM_RATE = 0.1
 
 
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=alpha_selection,
+    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, number_of_generations=NUM_GENERATIONS ,selection_method=alpha_selection,
                           crossover_methods=two_point_crossover, elitism_rate=ELITISM_RATE, display_best_snake=False)
 
     ga.run()
