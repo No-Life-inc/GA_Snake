@@ -6,7 +6,7 @@ from ga_brain import GABrain
 import pickle
 
 class SnakeGame:
-    def __init__(self, brain=None, width=800, height=600, snake_size=20, display=False):
+    def __init__(self, brain=None, width=800, height=600, snake_size=20, display=False, seed=None, index=0):
         pygame.init()
         self.clock = pygame.time.Clock()
         self.WIDTH, self.HEIGHT = width, height
@@ -14,10 +14,13 @@ class SnakeGame:
         self.SNAKE_SPEED = self.SNAKE_SIZE  # make sure the snake's speed is the same as the grid cell size
         self.snake = Snake(self.random_position(), [self.SNAKE_SPEED, 0], self.SNAKE_SIZE)
         self.food_pos = self.generate_food()
+        self.seed = seed
+        self.index = index  # Unique index for each instance
+
         if brain is not None:
             self.brain = brain
         else:
-            self.brain = GABrain()
+            self.brain = GABrain(seed=self.seed, index=self.index)
         self.score = 0
         self.display = display
         if self.display:
