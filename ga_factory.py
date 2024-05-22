@@ -12,7 +12,7 @@ from crossover_methods import single_point_crossover, two_point_crossover, unifo
 
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, elitism_rate=None, display_best_snake=False):
+                 crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False):
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -24,9 +24,8 @@ class GeneticAlgorithm:
         self.selection_method = selection_method
         self.display_best_snake = display_best_snake
         self.crossover_method = crossover_methods
+        self.elitism_rate = elitism_rate
         self.path = self.make_subdirs()
-        if elitism_rate:
-            self.elitism_rate = elitism_rate
 
 
     def initialize_population(self):
@@ -49,7 +48,7 @@ class GeneticAlgorithm:
                 highest_amount_of_food_eaten = food_eaten
                 best_game = game
 
-        print(f"Generation {generation_number} - Highest amount of food eaten: {highest_amount_of_food_eaten}")
+        # print(f"Generation {generation_number} - Highest amount of food eaten: {highest_amount_of_food_eaten}")
 
         if best_game is not None:
             best_game.save_game_states(f'best_snakes/{self.path}/Gen_{generation_number}_snake.pkl')
@@ -117,15 +116,16 @@ class GeneticAlgorithm:
     def make_plot(self):
         keys = list(self.gen_best_score_dict.keys())
         values = [int(value) for value in self.gen_best_score_dict.values()]
-        plt.scatter(keys, values)
-        plt.plot(keys, values)
-        plt.xlabel('Generation')
-        plt.ylabel('Score')
-        plt.title('Generation vs Score')
-        plt.yticks(range(0, max(values) + 1, 1))
-        plt.xticks(range(1, max(keys) + 1, 1))
+        new_plt = plt.figure()
+        new_plt.scatter(keys, values)
+        new_plt.plot(keys, values)
+        new_plt.xlabel('Generation')
+        new_plt.ylabel('Score')
+        new_plt.title('Generation vs Score')
+        new_plt.yticks(range(0, max(values) + 1, 1))
+        new_plt.xticks(range(1, max(keys) + 1, 1))
 
-        return plt
+        return new_plt
     
     def save_plot(self, plt):
 
@@ -140,7 +140,7 @@ class GeneticAlgorithm:
         selection_method_name = self.selection_method.__name__
         crossover_method_name = self.crossover_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'
@@ -165,19 +165,3 @@ class GeneticAlgorithm:
             f.write('Generation,Best Fitness,Avg Fitness\n')
             for generation in self.gen_best_fitness_dict:
                 f.write(f'{generation},{self.gen_best_fitness_dict[generation]},{self.gen_avg_fitness_dict[generation]}\n')
-
-
-
-if __name__ == "__main__":
-    NUM_GENERATIONS = 2
-    POPULATION_SIZE = 2000
-    MUTATION_RATE = 0.05
-    ELITISM_RATE = 0.1
-
-
-    ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, number_of_generations=NUM_GENERATIONS ,selection_method=alpha_selection,
-                          crossover_methods=two_point_crossover, elitism_rate=ELITISM_RATE, display_best_snake=False)
-
-    ga.run()
-
-    pygame.quit()
