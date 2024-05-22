@@ -4,6 +4,7 @@ from game import SnakeGame
 from ga_brain import GABrain
 import pygame
 import matplotlib.pyplot as plt
+import os
 
 from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, \
     elitism_selection, alpha_selection
@@ -17,11 +18,13 @@ class GeneticAlgorithm:
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.population = self.initialize_population()
-        self.gen_score_dict = {}
+        self.gen_best_score_dict = {}
+        self.gen_avg_fitness_dict = {}
         self.selection_method = selection_method
         self.display_best_snake = display_best_snake
         self.elitism_rate = elitism_rate
         self.crossover_method = crossover_methods
+        self.path = self.make_subdirs()
 
 
     def initialize_population(self):
@@ -33,6 +36,7 @@ class GeneticAlgorithm:
         highest_amount_of_food_eaten = 0
         best_game = None
         generation_number += 1
+        
 
         for brain in self.population:
             game = SnakeGame(brain=brain, display=False)
@@ -46,12 +50,14 @@ class GeneticAlgorithm:
         print(f"Generation {generation_number} - Highest amount of food eaten: {highest_amount_of_food_eaten}")
 
         if best_game is not None:
-            best_game.save_game_states(f'best_snakes/Gen_{generation_number}_snake.pkl')
+            best_game.save_game_states(f'best_snakes/{self.path}/Gen_{generation_number}_snake.pkl')
 
             if self.display_best_snake:
-                best_game.play_back(f'best_snakes/Gen_{generation_number}_snake.pkl')
+                best_game.play_back(f'best_snakes/{self.path}/Gen_{generation_number}_snake.pkl')
 
-        self.gen_score_dict[generation_number] = highest_amount_of_food_eaten
+        gen_fitness = [brain.fitness for brain in self.population]
+        self.gen_avg_fitness_dict[generation_number] = sum(gen_fitness) / len(gen_fitness)
+        self.gen_best_score_dict[generation_number] = highest_amount_of_food_eaten
 
     def crossover(self, parent1, parent2):
         return self.crossover_method(parent1, parent2)
@@ -101,10 +107,13 @@ class GeneticAlgorithm:
         plt = self.make_plot()
         self.save_plot(plt)
 
+        self.save_raw_data()
+        self.save_avg_fitness()
+
 
     def make_plot(self):
-        keys = list(self.gen_score_dict.keys())
-        values = [int(value) for value in self.gen_score_dict.values()]
+        keys = list(self.gen_best_score_dict.keys())
+        values = [int(value) for value in self.gen_best_score_dict.values()]
         plt.scatter(keys, values)
         plt.plot(keys, values)
         plt.xlabel('Generation')
@@ -116,15 +125,43 @@ class GeneticAlgorithm:
         return plt
     
     def save_plot(self, plt):
-        # Get the names of the selection and crossover methods
-        selection_method_name = self.selection_method.__name__
-        crossover_method_name = self.crossover_method.__name__
 
         # Create the filename
-        filename = f'graphs/ga_plot_{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}.png'
+        filename = f'graphs/{self.path}/Generation_vs_score_plot.png'
 
         # Save the plot
         plt.savefig(filename)
+
+    #make subdirs for best_snakes and graphs and raw data with selection, crossover method, population size, mutation rate
+    def make_subdirs(self):
+        selection_method_name = self.selection_method.__name__
+        crossover_method_name = self.crossover_method.__name__
+
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}'
+
+        for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
+            path = f'{parent_dir}/{subdir_name}'
+            os.makedirs(path, exist_ok=True)
+
+        return subdir_name
+    
+    def save_raw_data(self):
+        # Save gen_score_dict to a csv file under path
+
+        filename = f'raw_data/{self.path}/Generation_score.csv'
+
+        with open(filename, 'w') as f:
+            f.write('Generation,Score\n')
+            for generation, score in self.gen_best_score_dict.items():
+                f.write(f'{generation},{score}\n')
+
+    def save_avg_fitness(self):
+        filename = f'raw_data/{self.path}/Generation_avg_fitness.csv'
+
+        with open(filename, 'w') as f:
+                f.write('Generation,Avg Fitness\n')
+                for generation, avg_fitness in self.gen_avg_fitness_dict.items():
+                    f.write(f'{generation},{avg_fitness}\n')
 
 
 if __name__ == "__main__":
