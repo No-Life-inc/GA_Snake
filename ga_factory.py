@@ -20,6 +20,7 @@ class GeneticAlgorithm:
         self.population = self.initialize_population()
         self.gen_best_score_dict = {}
         self.gen_avg_fitness_dict = {}
+        self.gen_best_fitness_dict = {}
         self.selection_method = selection_method
         self.display_best_snake = display_best_snake
         self.elitism_rate = elitism_rate
@@ -58,6 +59,7 @@ class GeneticAlgorithm:
         gen_fitness = [brain.fitness for brain in self.population]
         self.gen_avg_fitness_dict[generation_number] = sum(gen_fitness) / len(gen_fitness)
         self.gen_best_score_dict[generation_number] = highest_amount_of_food_eaten
+        self.gen_best_fitness_dict[generation_number] = max(gen_fitness)
 
     def crossover(self, parent1, parent2):
         return self.crossover_method(parent1, parent2)
@@ -107,8 +109,8 @@ class GeneticAlgorithm:
         plt = self.make_plot()
         self.save_plot(plt)
 
-        self.save_raw_data()
-        self.save_avg_fitness()
+        self.save_score_data()
+        self.save_fitness_data()
 
 
     def make_plot(self):
@@ -145,7 +147,7 @@ class GeneticAlgorithm:
 
         return subdir_name
     
-    def save_raw_data(self):
+    def save_score_data(self):
         # Save gen_score_dict to a csv file under path
 
         filename = f'raw_data/{self.path}/Generation_score.csv'
@@ -155,13 +157,14 @@ class GeneticAlgorithm:
             for generation, score in self.gen_best_score_dict.items():
                 f.write(f'{generation},{score}\n')
 
-    def save_avg_fitness(self):
-        filename = f'raw_data/{self.path}/Generation_avg_fitness.csv'
+    def save_fitness_data(self):
+        filename = f'raw_data/{self.path}/Generation_fitness.csv'
 
         with open(filename, 'w') as f:
-                f.write('Generation,Avg Fitness\n')
-                for generation, avg_fitness in self.gen_avg_fitness_dict.items():
-                    f.write(f'{generation},{avg_fitness}\n')
+            f.write('Generation,Best Fitness,Avg Fitness\n')
+            for generation in self.gen_best_fitness_dict:
+                f.write(f'{generation},{self.gen_best_fitness_dict[generation]},{self.gen_avg_fitness_dict[generation]}\n')
+
 
 
 if __name__ == "__main__":
@@ -172,9 +175,8 @@ if __name__ == "__main__":
 
 
     ga = GeneticAlgorithm(POPULATION_SIZE, MUTATION_RATE, selection_method=alpha_selection,
-                          crossover_methods=uniform_crossover, elitism_rate=ELITISM_RATE, display_best_snake=True)
+                          crossover_methods=two_point_crossover, elitism_rate=ELITISM_RATE, display_best_snake=False)
 
     ga.run()
-    ga.make_plot()
 
     pygame.quit()
