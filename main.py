@@ -11,11 +11,11 @@ if __name__ == "__main__":
 
     seeds = range(2)
 
-    population_sizes = [10]
+    population_sizes = [1000]
     mutation_rates = [0.1]
     selection_methods = [alpha_selection]
     crossover_methods = [single_point_crossover]
-    generations = 10
+    generations = 20
     elistism_rates = [0.1]
     
     for seed in seeds:

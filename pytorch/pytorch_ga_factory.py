@@ -45,9 +45,7 @@ class GeneticAlgorithmTorch:
         generation_number += 1
 
         # Create a pool of worker processes
-        with Pool() as pool:
-            # Use the map function to run the game for each brain in the population in parallel
-            results = pool.map(self.run_game, self.population)
+        results = [self.run_game(brain) for brain in self.population]
 
         for brain, (game, snake_age, score, food_eaten) in zip(self.population, results):
             brain.set_fitness(snake_age, score)
