@@ -4,18 +4,18 @@ from selection_methods import alpha_selection, tournament_selection, elitism_sel
 from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
 import pygame
 import torch
-
+torch.backends.cudnn.deterministic = True
 
 if __name__ == "__main__":
 # make combinations of crossovers selection methods and population sizes and mutation rates and run the genetic algorithm
 
-    seeds = range(1)
+    seeds = range(2)
 
-    population_sizes = [2000]
+    population_sizes = [10]
     mutation_rates = [0.1]
-    selection_methods = [alpha_selection, rank_selection, top_20_percent]
-    crossover_methods = [single_point_crossover, two_point_crossover, arithmetic_crossover]
-    generations = 100
+    selection_methods = [alpha_selection]
+    crossover_methods = [single_point_crossover]
+    generations = 20
     elistism_rates = [0.1]
     
     for seed in seeds:
@@ -25,8 +25,8 @@ if __name__ == "__main__":
                 for selection_method in selection_methods:
                     for crossover_method in crossover_methods:
                         for elitism_rate in elistism_rates:
-                            ga = GeneticAlgorithmTorch(population_size=population_size, mutation_rate=mutation_rate, number_of_generations=generations, 
-                                                selection_method=selection_method, crossover_methods=crossover_method, elitism_rate=elitism_rate, display_best_snake=False)
+                            ga = GeneticAlgorithmTorch(population_size=population_size, mutation_rate=mutation_rate, number_of_generations=generations,
+                                                  selection_method=selection_method, crossover_methods=crossover_method, elitism_rate=elitism_rate, display_best_snake=False,seed=seed)
                             ga.run()
 
 

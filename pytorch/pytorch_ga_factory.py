@@ -11,12 +11,15 @@ from crossover_methods import single_point_crossover, two_point_crossover, unifo
 
 class GeneticAlgorithmTorch:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False):
+                 crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False, seed=None):
 
         if torch.cuda.is_available():
             self.device = "cuda"
         else:
             self.device = "cpu"
+
+        if seed is not None:
+            self.seed = seed
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -39,7 +42,6 @@ class GeneticAlgorithmTorch:
     def evaluate_population(self, generation_number: int):
         # Run a game for each GABrain in the population
         highest_amount_of_food_eaten = 0
-        best_game = None
         generation_number += 1
 
         # Create a pool of worker processes
@@ -49,8 +51,10 @@ class GeneticAlgorithmTorch:
 
         for brain, (game, snake_age, score, food_eaten) in zip(self.population, results):
             brain.set_fitness(snake_age, score)
-
         
+            # Find the best brain in the population
+        best_brain = max(self.population, key=lambda brain: brain.fitness)
+
         # Find the best game in the population
         best_game = max(results, key=lambda x: x[2])[0]
         highest_amount_of_food_eaten = max(results, key=lambda x: x[2])[2]
@@ -65,6 +69,8 @@ class GeneticAlgorithmTorch:
         self.gen_avg_fitness_dict[generation_number] = sum(gen_fitness) / len(gen_fitness)
         self.gen_best_score_dict[generation_number] = highest_amount_of_food_eaten
         self.gen_best_fitness_dict[generation_number] = max(gen_fitness)
+
+        return best_brain
 
     def run_game(self, brain):
         game = SnakeGame(brain=brain, display=False)
@@ -152,7 +158,7 @@ class GeneticAlgorithmTorch:
         selection_method_name = self.selection_method.__name__
         crossover_method_name = self.crossover_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}_seed_{self.seed}'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'
