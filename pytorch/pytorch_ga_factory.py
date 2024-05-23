@@ -5,14 +5,14 @@ import os
 import torch
 from multiprocessing import Pool
 
-from selection_methods import top_20_percent, rank_selection, tournament_selection, elitism_selection, alpha_selection
+from selection_methods import truncation_selection, rank_selection, tournament_selection, elitism_selection, alpha_selection
 from crossover_methods import single_point_crossover, two_point_crossover
 from mutation_methods import random_mutation, swap_mutation
 
 
 class GeneticAlgorithmTorch:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, mutation_methods=random_mutation, elitism_rate=0.0, display_best_snake=False):
+                 crossover_methods=single_point_crossover, mutation_methods=random_mutation, elitism_rate=0.0, display_best_snake=False, seed=None):
 
         if torch.cuda.is_available():
             self.device = "cuda"
@@ -84,32 +84,83 @@ class GeneticAlgorithmTorch:
         return self.mutation_method(child, self.mutation_rate)
 
     def selection(self):
-        return self.selection_method(self.population)
+        selected = self.selection_method(self.population)
+        # Ensure selected is a list
+        if not isinstance(selected, list):
+            selected = [selected]
+        return selected
+
+    #def generate_new_population(self):
+    #    self.population.sort(key=lambda brain: brain.fitness, reverse=True)
+
+    #    elites = elitism_selection(self.population, self.elitism_rate)
+    #    new_population = elites[:]
+
+    #    while len(new_population) < self.population_size:
+    #        selected = self.selection()
+
+    #        if isinstance(selected, (list, tuple)) and len(selected) == 2:
+    #            parent1, parent2 = selected
+    #        else:
+    #            parent1 = selected
+    #            parent2 = selected
+    #            while parent2 == parent1:
+    #                parent2 = self.selection()
+
+    #        child = self.crossover(parent1, parent2)
+    #        self.mutation(child)
+    #        new_population.append(child)
+
+    #    self.population = new_population
+    #    for brain in self.population:
+    #        brain.reset_fitness()
 
     def generate_new_population(self):
+        # Sort the population by fitness
         self.population.sort(key=lambda brain: brain.fitness, reverse=True)
 
+        # Select elites
         elites = elitism_selection(self.population, self.elitism_rate)
         new_population = elites[:]
 
-        while len(new_population) < self.population_size:
-            selected = self.selection()
+        # Perform selection once
+        selected = self.selection()
 
-            if isinstance(selected, (list, tuple)) and len(selected) == 2:
-                parent1, parent2 = selected
+        if isinstance(selected, tuple):  # Handle alpha_selection case
+            alpha, selected_parents = selected
+            parent_selection_pool = selected_parents
+        else:  # Handle truncation and rank selection case
+            parent_selection_pool = selected
+
+        # Ensure parent_selection_pool has at least 2 items
+        while len(parent_selection_pool) < 2:
+            parent_selection_pool.append(self.selection()[0])
+
+        while len(new_population) < self.population_size:
+            if isinstance(selected, tuple):  # Ensure alpha is always one of the parents
+                parent1 = alpha
+                parent2 = parent_selection_pool[torch.randint(len(parent_selection_pool), (1,)).item()]
             else:
-                parent1 = selected
-                parent2 = selected
-                while parent2 == parent1:
-                    parent2 = self.selection()
+                indices = torch.multinomial(torch.ones(len(parent_selection_pool)), 2, replacement=False).tolist()
+                parent1, parent2 = parent_selection_pool[indices[0]], parent_selection_pool[indices[1]]
+
+            # Ensure parent1 and parent2 are not tuples
+            if isinstance(parent1, tuple):
+                parent1 = parent1[0]
+            if isinstance(parent2, tuple):
+                parent2 = parent2[0]
 
             child = self.crossover(parent1, parent2)
             self.mutation(child)
             new_population.append(child)
 
-        self.population = new_population
+        # Trim the new population to the desired size if necessary
+        self.population = new_population[:self.population_size]
+
+        # Reset fitness for the new population
         for brain in self.population:
             brain.reset_fitness()
+
 
     def run(self):
         for generation in range(self.number_of_generations):
@@ -154,7 +205,7 @@ class GeneticAlgorithmTorch:
         crossover_method_name = self.crossover_method.__name__
         mutation_method_name = self.mutation_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{mutation_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{mutation_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}_seed_{self.seed}'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'

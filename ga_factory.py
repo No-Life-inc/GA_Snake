@@ -4,14 +4,17 @@ from ga_brain import GABrain  # Import the PyTorch version of GABrain
 import matplotlib.pyplot as plt
 import os
 
-from selection_methods import top_20_percent, rank_selection, tournament_selection, elitism_selection, alpha_selection
+from selection_methods import truncation_selection, rank_selection, tournament_selection, elitism_selection, alpha_selection
 from crossover_methods import single_point_crossover, two_point_crossover
 from mutation_methods import random_mutation, swap_mutation
 
 
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, mutation_methods=random_mutation, elitism_rate=0.0, display_best_snake=False):
+                 crossover_methods=single_point_crossover, mutation_methods=random_mutation, elitism_rate=0.0, display_best_snake=False, seed=None):
+
+        if seed is not None:
+            self.seed = seed
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -138,7 +141,7 @@ class GeneticAlgorithm:
         crossover_method_name = self.crossover_method.__name__
         mutation_method_name = self.mutation_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{mutation_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{mutation_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}_seed_{self.seed}'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'
