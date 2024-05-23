@@ -5,19 +5,19 @@ from crossover_methods import single_point_crossover, two_point_crossover, unifo
 from mutation_methods import random_mutation, swap_mutation, inversion_mutation
 import pygame
 import torch
-
+torch.backends.cudnn.deterministic = True
 
 if __name__ == "__main__":
 # make combinations of crossovers selection methods and population sizes and mutation rates and run the genetic algorithm
 
-    seeds = range(1)
+    seeds = range(2)
 
-    population_sizes = [2000]
+    population_sizes = [1000]
     mutation_rates = [0.1]
-    selection_methods = [alpha_selection, rank_selection, top_20_percent]
-    crossover_methods = [single_point_crossover, two_point_crossover, arithmetic_crossover]
-    mutation_methods = [random_mutation, swap_mutation, inversion_mutation]
-    generations = 100
+    selection_methods = [alpha_selection]
+    crossover_methods = [single_point_crossover]
+    mutation_methods = [random_mutation]
+    generations = 20
     elistism_rates = [0.1]
     
     for seed in seeds:

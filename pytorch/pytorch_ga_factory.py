@@ -19,6 +19,9 @@ class GeneticAlgorithmTorch:
         else:
             self.device = "cpu"
 
+        if seed is not None:
+            self.seed = seed
+
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.number_of_generations = number_of_generations
@@ -41,21 +44,20 @@ class GeneticAlgorithmTorch:
     def evaluate_population(self, generation_number: int):
         # Run a game for each GABrain in the population
         highest_amount_of_food_eaten = 0
-        best_game = None
         generation_number += 1
 
         # Create a pool of worker processes
-        with Pool() as pool:
-            # Use the map function to run the game for each brain in the population in parallel
-            results = pool.map(self.run_game, self.population)
+        results = [self.run_game(brain) for brain in self.population]
 
         for brain, (game, snake_age, score, food_eaten) in zip(self.population, results):
             brain.set_fitness(snake_age, score)
+        
+        # Find the best brain in the population
+        best_brain_index = max(range(len(self.population)), key=lambda index: self.population[index].fitness)
+        best_brain = self.population[best_brain_index]
 
-            if food_eaten > highest_amount_of_food_eaten:
-                highest_amount_of_food_eaten = food_eaten
-                best_game = game
-        # print(f"Generation {generation_number} - Highest amount of food eaten: {highest_amount_of_food_eaten}")
+        # Get the game associated with the best brain
+        best_game, _, _, highest_amount_of_food_eaten = results[best_brain_index]
 
         if best_game is not None:
             best_game.save_game_states(f'best_snakes/{self.path}/Gen_{generation_number}_snake.pkl')
@@ -67,6 +69,8 @@ class GeneticAlgorithmTorch:
         self.gen_avg_fitness_dict[generation_number] = sum(gen_fitness) / len(gen_fitness)
         self.gen_best_score_dict[generation_number] = highest_amount_of_food_eaten
         self.gen_best_fitness_dict[generation_number] = max(gen_fitness)
+
+        return best_brain
 
     def run_game(self, brain):
         game = SnakeGame(brain=brain, display=False)
@@ -130,7 +134,7 @@ class GeneticAlgorithmTorch:
         ax.plot(keys, values)
         ax.set_xlabel('Generation')
         ax.set_ylabel('Score')
-        ax.set_title('Generation vs Score')
+        ax.set_title('Generation vs Food Eaten')
         ax.set_yticks(range(0, max(values) + 1, 1))
         ax.set_xticks(range(1, max(keys) + 1, 1))
 
@@ -139,7 +143,7 @@ class GeneticAlgorithmTorch:
     def save_plot(self, plt):
 
         # Create the filename
-        filename = f'graphs/{self.path}/Generation_vs_score_plot.png'
+        filename = f'graphs/{self.path}/Generation_vs_Food_plot.png'
 
         # Save the plot
         plt.savefig(filename)
@@ -161,10 +165,10 @@ class GeneticAlgorithmTorch:
     def save_score_data(self):
         # Save gen_score_dict to a csv file under path
 
-        filename = f'raw_data/{self.path}/Generation_score.csv'
+        filename = f'raw_data/{self.path}/Generation_Food.csv'
 
         with open(filename, 'w') as f:
-            f.write('Generation,Score\n')
+            f.write('Generation,Food\n')
             for generation, score in self.gen_best_score_dict.items():
                 f.write(f'{generation},{score}\n')
 

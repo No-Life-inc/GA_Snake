@@ -8,6 +8,7 @@ class GABrain:
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
         self.hidden_layers = hidden_layers
+        print("GABrain init")
 
         self.fitness = 0  # Initialize fitness
 
