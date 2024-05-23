@@ -11,12 +11,15 @@ from crossover_methods import single_point_crossover, two_point_crossover, unifo
 
 class GeneticAlgorithmTorch:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False):
+                 crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False, seed=None):
 
         if torch.cuda.is_available():
             self.device = "cuda"
         else:
             self.device = "cpu"
+
+        if seed is not None:
+            self.seed = seed
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -152,7 +155,7 @@ class GeneticAlgorithmTorch:
         selection_method_name = self.selection_method.__name__
         crossover_method_name = self.crossover_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}_seed_{self.seed}'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'

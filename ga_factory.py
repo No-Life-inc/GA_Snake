@@ -140,7 +140,7 @@ class GeneticAlgorithm:
         selection_method_name = self.selection_method.__name__
         crossover_method_name = self.crossover_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}_seed_'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'
