@@ -1,8 +1,8 @@
 #%%
 from pytorch.pytorch_ga_factory import GeneticAlgorithmTorch
-from selection_methods import alpha_selection, tournament_selection, elitism_selection, rank_selection, roulette_wheel_selection, top_20_percent
-from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
-from mutation_methods import random_mutation, swap_mutation, inversion_mutation
+from selection_methods import alpha_selection, tournament_selection, elitism_selection, rank_selection, top_20_percent
+from crossover_methods import single_point_crossover, two_point_crossover
+from mutation_methods import random_mutation, swap_mutation
 import pygame
 import torch
 torch.backends.cudnn.deterministic = True

@@ -4,9 +4,9 @@ from ga_brain import GABrain  # Import the PyTorch version of GABrain
 import matplotlib.pyplot as plt
 import os
 
-from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, elitism_selection, alpha_selection
-from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
-from mutation_methods import random_mutation, swap_mutation, inversion_mutation
+from selection_methods import top_20_percent, rank_selection, tournament_selection, elitism_selection, alpha_selection
+from crossover_methods import single_point_crossover, two_point_crossover
+from mutation_methods import random_mutation, swap_mutation
 
 
 class GeneticAlgorithm:
