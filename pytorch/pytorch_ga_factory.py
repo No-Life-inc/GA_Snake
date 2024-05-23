@@ -170,7 +170,6 @@ class GeneticAlgorithmTorch:
 
         plt = self.make_plot()
         self.save_plot(plt)
-
         self.save_score_data()
         self.save_fitness_data()
 
@@ -188,6 +187,7 @@ class GeneticAlgorithmTorch:
         ax.set_title('Generation vs Food Eaten')
         ax.set_yticks(range(0, max(values) + 1, 1))
         ax.set_xticks(range(1, max(keys) + 1, 1))
+        plt.close(fig)
 
         return fig
     
