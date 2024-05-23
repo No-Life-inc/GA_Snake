@@ -24,6 +24,15 @@ class SnakeGame:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.game_over = False
         self.record = []
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['clock']  # remove the clock attribute
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.clock = pygame.time.Clock()  # add the clock attribute back
         
     def random_position(self):
         mid_width = self.WIDTH // 2

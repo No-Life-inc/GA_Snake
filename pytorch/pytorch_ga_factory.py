@@ -1,16 +1,22 @@
-import numpy as np
 from game import SnakeGame
-from ga_brain import GABrain  # Import the PyTorch version of GABrain
+from pytorch.pytorch_ga_brain import GABrainTorch  # Import the PyTorch version of GABrain
 import matplotlib.pyplot as plt
 import os
+import torch
+from multiprocessing import Pool
 
 from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, elitism_selection, alpha_selection
 from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
 
 
-class GeneticAlgorithm:
+class GeneticAlgorithmTorch:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
                  crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False):
+
+        if torch.cuda.is_available():
+            self.device = "cuda"
+        else:
+            self.device = "cpu"
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -28,24 +34,25 @@ class GeneticAlgorithm:
 
     def initialize_population(self):
         # Create an initial population of random GABrain instances
-        return [GABrain() for _ in range(self.population_size)]
+        return [GABrainTorch() for _ in range(self.population_size)]
 
     def evaluate_population(self, generation_number: int):
         # Run a game for each GABrain in the population
         highest_amount_of_food_eaten = 0
         best_game = None
         generation_number += 1
-        
 
-        for brain in self.population:
-            game = SnakeGame(brain=brain, display=False)
-            snake_age, score, food_eaten = game.run()
+        # Create a pool of worker processes
+        with Pool() as pool:
+            # Use the map function to run the game for each brain in the population in parallel
+            results = pool.map(self.run_game, self.population)
+
+        for brain, (game, snake_age, score, food_eaten) in zip(self.population, results):
             brain.set_fitness(snake_age, score)
 
             if food_eaten > highest_amount_of_food_eaten:
                 highest_amount_of_food_eaten = food_eaten
                 best_game = game
-
         # print(f"Generation {generation_number} - Highest amount of food eaten: {highest_amount_of_food_eaten}")
 
         if best_game is not None:
@@ -59,15 +66,20 @@ class GeneticAlgorithm:
         self.gen_best_score_dict[generation_number] = highest_amount_of_food_eaten
         self.gen_best_fitness_dict[generation_number] = max(gen_fitness)
 
+    def run_game(self, brain):
+        game = SnakeGame(brain=brain, display=False)
+        snake_age, score, food_eaten = game.run()
+        return game, snake_age, score, food_eaten
+
     def crossover(self, parent1, parent2):
         return self.crossover_method(parent1, parent2)
 
     def mutation(self, child):
-        # Randomly change some genes in the child's genome
+    # Randomly change some genes in the child's genome
         for i, layer in enumerate(child.genome):
-            mutation_mask = np.random.rand(*layer.shape) < self.mutation_rate
-            random_genes = np.random.randn(*layer.shape)  # Assuming normal distribution for random genes
-            child.genome[i] = np.where(mutation_mask, random_genes, layer)
+            mutation_mask = torch.rand(*layer.shape, device=child.device) < self.mutation_rate
+            random_genes = torch.randn(*layer.shape, device=child.device)  # Assuming normal distribution for random genes
+            child.genome[i] = torch.where(mutation_mask, random_genes, layer)
 
 
     def selection(self):
