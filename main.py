@@ -18,16 +18,16 @@ if __name__ == "__main__":
     generations = 100
     elistism_rates = [0.1]
     
-for seed in seeds:
-    torch.manual_seed(seed)
-    for population_size in population_sizes:
-        for mutation_rate in mutation_rates:
-            for selection_method in selection_methods:
-                for crossover_method in crossover_methods:
-                    for elitism_rate in elistism_rates:
-                        ga = GeneticAlgorithmTorch(population_size=population_size, mutation_rate=mutation_rate, number_of_generations=generations, 
-                                              selection_method=selection_method, crossover_methods=crossover_method, elitism_rate=elitism_rate, display_best_snake=False)
-                        ga.run()
+    for seed in seeds:
+        torch.manual_seed(seed)
+        for population_size in population_sizes:
+            for mutation_rate in mutation_rates:
+                for selection_method in selection_methods:
+                    for crossover_method in crossover_methods:
+                        for elitism_rate in elistism_rates:
+                            ga = GeneticAlgorithmTorch(population_size=population_size, mutation_rate=mutation_rate, number_of_generations=generations, 
+                                                selection_method=selection_method, crossover_methods=crossover_method, elitism_rate=elitism_rate, display_best_snake=False)
+                            ga.run()
 
 
 pygame.quit()

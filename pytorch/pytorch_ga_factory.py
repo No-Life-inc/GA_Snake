@@ -50,10 +50,10 @@ class GeneticAlgorithmTorch:
         for brain, (game, snake_age, score, food_eaten) in zip(self.population, results):
             brain.set_fitness(snake_age, score)
 
-            if food_eaten > highest_amount_of_food_eaten:
-                highest_amount_of_food_eaten = food_eaten
-                best_game = game
-        # print(f"Generation {generation_number} - Highest amount of food eaten: {highest_amount_of_food_eaten}")
+        
+        # Find the best game in the population
+        best_game = max(results, key=lambda x: x[2])[0]
+        highest_amount_of_food_eaten = max(results, key=lambda x: x[2])[2]
 
         if best_game is not None:
             best_game.save_game_states(f'best_snakes/{self.path}/Gen_{generation_number}_snake.pkl')
