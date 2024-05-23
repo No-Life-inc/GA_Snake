@@ -15,7 +15,7 @@ if __name__ == "__main__":
     mutation_rates = [0.1]
     selection_methods = [alpha_selection]
     crossover_methods = [single_point_crossover]
-    generations = 20
+    generations = 10
     elistism_rates = [0.1]
     
     for seed in seeds:

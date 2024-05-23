@@ -52,12 +52,12 @@ class GeneticAlgorithmTorch:
         for brain, (game, snake_age, score, food_eaten) in zip(self.population, results):
             brain.set_fitness(snake_age, score)
         
-            # Find the best brain in the population
-        best_brain = max(self.population, key=lambda brain: brain.fitness)
+        # Find the best brain in the population
+        best_brain_index = max(range(len(self.population)), key=lambda index: self.population[index].fitness)
+        best_brain = self.population[best_brain_index]
 
-        # Find the best game in the population
-        best_game = max(results, key=lambda x: x[2])[0]
-        highest_amount_of_food_eaten = max(results, key=lambda x: x[2])[2]
+        # Get the game associated with the best brain
+        best_game, _, _, highest_amount_of_food_eaten = results[best_brain_index]
 
         if best_game is not None:
             best_game.save_game_states(f'best_snakes/{self.path}/Gen_{generation_number}_snake.pkl')
@@ -139,7 +139,7 @@ class GeneticAlgorithmTorch:
         ax.plot(keys, values)
         ax.set_xlabel('Generation')
         ax.set_ylabel('Score')
-        ax.set_title('Generation vs Score')
+        ax.set_title('Generation vs Food Eaten')
         ax.set_yticks(range(0, max(values) + 1, 1))
         ax.set_xticks(range(1, max(keys) + 1, 1))
 
@@ -148,7 +148,7 @@ class GeneticAlgorithmTorch:
     def save_plot(self, plt):
 
         # Create the filename
-        filename = f'graphs/{self.path}/Generation_vs_score_plot.png'
+        filename = f'graphs/{self.path}/Generation_vs_Food_plot.png'
 
         # Save the plot
         plt.savefig(filename)
@@ -169,10 +169,10 @@ class GeneticAlgorithmTorch:
     def save_score_data(self):
         # Save gen_score_dict to a csv file under path
 
-        filename = f'raw_data/{self.path}/Generation_score.csv'
+        filename = f'raw_data/{self.path}/Generation_Food.csv'
 
         with open(filename, 'w') as f:
-            f.write('Generation,Score\n')
+            f.write('Generation,Food\n')
             for generation, score in self.gen_best_score_dict.items():
                 f.write(f'{generation},{score}\n')
 
