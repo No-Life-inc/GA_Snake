@@ -6,11 +6,12 @@ import os
 
 from selection_methods import top_20_percent, roulette_wheel_selection, rank_selection, tournament_selection, elitism_selection, alpha_selection
 from crossover_methods import single_point_crossover, two_point_crossover, uniform_crossover, arithmetic_crossover
+from mutation_methods import random_mutation, swap_mutation, inversion_mutation
 
 
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate, number_of_generations ,selection_method=tournament_selection,
-                 crossover_methods=single_point_crossover, elitism_rate=0.0, display_best_snake=False):
+                 crossover_methods=single_point_crossover, mutation_methods=random_mutation, elitism_rate=0.0, display_best_snake=False):
 
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -22,6 +23,7 @@ class GeneticAlgorithm:
         self.selection_method = selection_method
         self.display_best_snake = display_best_snake
         self.crossover_method = crossover_methods
+        self.mutation_method = mutation_methods
         self.elitism_rate = elitism_rate
         self.path = self.make_subdirs()
 
@@ -63,12 +65,7 @@ class GeneticAlgorithm:
         return self.crossover_method(parent1, parent2)
 
     def mutation(self, child):
-        # Randomly change some genes in the child's genome
-        for i, layer in enumerate(child.genome):
-            mutation_mask = np.random.rand(*layer.shape) < self.mutation_rate
-            random_genes = np.random.randn(*layer.shape)  # Assuming normal distribution for random genes
-            child.genome[i] = np.where(mutation_mask, random_genes, layer)
-
+        return self.mutation_method(child, self.mutation_rate)
 
     def selection(self):
         return self.selection_method(self.population)
@@ -139,8 +136,9 @@ class GeneticAlgorithm:
     def make_subdirs(self):
         selection_method_name = self.selection_method.__name__
         crossover_method_name = self.crossover_method.__name__
+        mutation_method_name = self.mutation_method.__name__
 
-        subdir_name = f'{selection_method_name}_{crossover_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
+        subdir_name = f'{selection_method_name}_{crossover_method_name}_{mutation_method_name}_{self.population_size}_{self.mutation_rate}_elitism_{self.elitism_rate}'
 
         for parent_dir in ['best_snakes', 'graphs', 'raw_data']:
             path = f'{parent_dir}/{subdir_name}'
