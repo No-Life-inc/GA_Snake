@@ -4,6 +4,7 @@ import random
 from snake import Snake
 from ga_brain import GABrain
 import pickle
+import torch
 
 class SnakeGame:
     def __init__(self, brain=None, width=800, height=600, snake_size=20, display=False):
@@ -291,8 +292,8 @@ class SnakeGame:
         return snake_age, score, food_eaten
 
     def generate_food(self):
-        return  [random.randrange(self.WIDTH // self.SNAKE_SIZE) * self.SNAKE_SIZE,
-                         random.randrange(self.HEIGHT // self.SNAKE_SIZE) * self.SNAKE_SIZE]
+        return  [int(torch.randint(0, self.WIDTH // self.SNAKE_SIZE, (1,)).item()) * self.SNAKE_SIZE,
+                int(torch.randint(0, self.HEIGHT // self.SNAKE_SIZE, (1,)).item()) * self.SNAKE_SIZE]
 
     def wall_collide(self, pos):
         """Check if a given position collides with the wall."""
