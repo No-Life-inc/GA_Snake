@@ -5,15 +5,6 @@ def top_20_percent(population):
     top_20_percent = sorted_population[:int(0.2 * len(sorted_population))]
     return top_20_percent[torch.randint(len(top_20_percent), (1,)).item()]
 
-def roulette_wheel_selection(population):
-    total_fitness = sum(brain.fitness for brain in population)
-    selected_value = torch.rand(1).item() * total_fitness
-    cumulative_fitness = 0
-    for brain in population:
-        cumulative_fitness += brain.fitness
-        if cumulative_fitness >= selected_value:
-            return brain
-
 def rank_selection(population):
     sorted_population = sorted(population, key=lambda brain: brain.fitness, reverse=True)
     rank_sum = len(population) * (len(population) + 1) / 2

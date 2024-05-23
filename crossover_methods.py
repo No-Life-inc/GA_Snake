@@ -18,8 +18,3 @@ def uniform_crossover(parent1, parent2):
     child_genome = [parent1.genome[i] if torch.rand(1).item() < 0.5 else parent2.genome[i] for i in range(len(parent1.genome))]
     child = GABrainTorch(genome=child_genome)
     return child
-
-def arithmetic_crossover(parent1, parent2):
-    child_genome = [(parent1.genome[i] + parent2.genome[i]) / 2 for i in range(len(parent1.genome))]
-    child = GABrainTorch(genome=child_genome)
-    return child
