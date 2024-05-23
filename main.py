@@ -10,18 +10,20 @@ torch.backends.cudnn.deterministic = True
 if __name__ == "__main__":
 # make combinations of crossovers selection methods and population sizes and mutation rates and run the genetic algorithm
 
-    seeds = range(2)
+    #CHANGE TO YOUR SEEDS!
+    seeds = range()
 
-    population_sizes = [100]
-    mutation_rates = [0.1]
+    population_sizes = [2000]
+    mutation_rates = [0.05]
     selection_methods = [alpha_selection, tournament_selection, truncation_selection, rank_selection]
     crossover_methods = [single_point_crossover, two_point_crossover]
-    mutation_methods = [random_mutation, swap_mutation]
-    generations = 20
+    mutation_methods = [random_mutation]
+    generations = 100
     elistism_rates = [0.1]
-    
+
     for seed in seeds:
         torch.manual_seed(seed)
+        print("Running seed", seed)
         for population_size in population_sizes:
             for mutation_rate in mutation_rates:
                 for selection_method in selection_methods:
