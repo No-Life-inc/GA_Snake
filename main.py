@@ -8,14 +8,14 @@ import pygame
 if __name__ == "__main__":
 # make combinations of crossovers selection methods and population sizes and mutation rates and run the genetic algorithm
 
-    population_sizes = [1000]
+    population_sizes = [2000]
     mutation_rates = [0.1]
-    selection_methods = [alpha_selection]
-    crossover_methods = [two_point_crossover]
-    generations = 20
+    selection_methods = [rank_selection]
+    crossover_methods = [single_point_crossover, two_point_crossover, arithmetic_crossover]
+    generations = 100
     elistism_rates = [0.1]
 
-    for seed in range(2):
+    for seed in range(10):
         for population_size in population_sizes:
             for mutation_rate in mutation_rates:
                 for selection_method in selection_methods:

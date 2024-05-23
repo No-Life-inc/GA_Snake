@@ -16,7 +16,9 @@ def roulette_wheel_selection(population):
             return brain
 
 
-def rank_selection(population, num_selected):
+def rank_selection(population):
+    percentage = 0.2  # Select 20% of the population
+    num_selected = int(len(population) * percentage)
     selected_individuals = []
     for _ in range(num_selected):
         selected_rank = random.randint(1, len(population))
@@ -28,7 +30,6 @@ def rank_selection(population, num_selected):
                 population.remove(brain)  # Remove the selected individual from the population
                 break
     return selected_individuals
-
 
 def tournament_selection(population):
     tournament_size = min(len(population), 3)
