@@ -8,7 +8,7 @@ class FoodMedianCalculator:
         self.output_directory = output_directory
 
     def calculate(self):
-        file_paths = glob.glob('./combined_data/*.csv')
+        file_paths = glob.glob('./combined_data/pop500-mut01/*.csv')
         # Create the output directory if it doesn't exist
         os.makedirs(self.output_directory, exist_ok=True)
         
