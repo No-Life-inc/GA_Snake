@@ -10,7 +10,7 @@ class GraphMaker:
 
     def create_graph(self):
         # Get a list of all JSON files in the directory
-        json_files = glob.glob('median_files/*.json')
+        json_files = glob.glob('crossover_selections/*.json')
 
         plt.figure(figsize=(12, 8))
 
