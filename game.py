@@ -2,7 +2,7 @@ import numpy as np
 import pygame
 import random
 from snake import Snake
-from ga_brain import GABrain
+from pytorch.pytorch_ga_brain import GABrainTorch
 import pickle
 import torch
 
@@ -18,7 +18,7 @@ class SnakeGame:
         if brain is not None:
             self.brain = brain
         else:
-            self.brain = GABrain()
+            self.brain = GABrainTorch()
         self.score = 0
         self.display = display
         if self.display:

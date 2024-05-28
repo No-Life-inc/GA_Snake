@@ -90,30 +90,6 @@ class GeneticAlgorithmTorch:
             selected = [selected]
         return selected
 
-    #def generate_new_population(self):
-    #    self.population.sort(key=lambda brain: brain.fitness, reverse=True)
-
-    #    elites = elitism_selection(self.population, self.elitism_rate)
-    #    new_population = elites[:]
-
-    #    while len(new_population) < self.population_size:
-    #        selected = self.selection()
-
-    #        if isinstance(selected, (list, tuple)) and len(selected) == 2:
-    #            parent1, parent2 = selected
-    #        else:
-    #            parent1 = selected
-    #            parent2 = selected
-    #            while parent2 == parent1:
-    #                parent2 = self.selection()
-
-    #        child = self.crossover(parent1, parent2)
-    #        self.mutation(child)
-    #        new_population.append(child)
-
-    #    self.population = new_population
-    #    for brain in self.population:
-    #        brain.reset_fitness()
 
     def generate_new_population(self):
         # Sort the population by fitness
