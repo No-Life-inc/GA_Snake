@@ -18,11 +18,11 @@ The best snake from each generation is saved in the best_snakes folder.
 
 
 Pip install poetry -> poetry install -> poetry shell<br>
-under ga_factory.py set the population size, generations, crossover and selection methods
+under main.py set the population size, generations, crossover and selection methods
 Lastly, use the following command:
 
 ```bash
-python ga_factory.py
+python main.py
 ```
 
 ## Dependencies
