@@ -48,6 +48,9 @@ for subdir, dirs, files in os.walk(directory):
                     if subdir_name.startswith(combination):
                         # Append the 'Food' values to the corresponding generation in the result dict
                         for index, row in df.iterrows():
+                            generation = int(row['Generation'])
+                            if generation > 50:
+                                break
                             food = int(row['Food'])
                             results[group][combination][int(row['Generation'])].append(food)
                             max_food[group][combination] = max(max_food[group][combination], food)
